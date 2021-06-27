@@ -1,29 +1,29 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "minecodecraft",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "MineCodeCraft MOD",
+  "description": "MineCodeCraft Server size mod",
   "authors": [
-    "Me!"
+    "Tiya_Anlite@codelab"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://codelab.focot.cn/",
+    "sources": "https://github.com/TiyaAnlite/minecodecraft-mod"
   },
 
-  "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "license": "GPL-3.0",
+  "icon": "assets/MineCodeCraftMod/minecodecraft.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "cn.focot.codelab.MineCodeCraftMod"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "MineCodeCraftMod.mixins.json"
   ],
 
   "depends": {
