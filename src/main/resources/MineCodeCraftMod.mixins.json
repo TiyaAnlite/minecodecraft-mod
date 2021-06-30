@@ -3,10 +3,11 @@
   "minVersion": "0.8",
   "package": "cn.focot.codelab.mixin",
   "compatibilityLevel": "JAVA_16",
-  "mixins": [
-  ],
-  "client": [
-    "MineCodeCraftModMixin"
+  "mixins": [],
+  "client": [],
+  "server": [
+    "ServerMixin",
+    "CreeperMixin"
   ],
   "injectors": {
     "defaultRequire": 1
