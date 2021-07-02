@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class CreeperMixin {
     @Inject(method = "explode", at = @At("HEAD"))
     private void onCreeperexplode(CallbackInfo c) {
-        MineCodeCraftHelper.onCreeperexplode((CreeperEntity) (Object) this);
+        MineCodeCraftHelper.onCreeperExplode((CreeperEntity) (Object) this);
     }
 
     @ModifyArg(
@@ -24,7 +24,7 @@ public class CreeperMixin {
             ),
             index = 5
     )
-    private Explosion.DestructionType onCreepercreateExplosion(Explosion.DestructionType t) {
-        return MineCodeCraftHelper.onCreepercreateExplosion(t);
+    private Explosion.DestructionType onCreeperCreateExplosion(Explosion.DestructionType t) {
+        return MineCodeCraftHelper.onCreeperCreateExplosion(t);
     }
 }
