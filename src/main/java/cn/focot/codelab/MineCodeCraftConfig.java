@@ -74,5 +74,18 @@ public class MineCodeCraftConfig {
 }
 
 class ConfigBean {
-    public boolean creeperExplosion = false;
+    public GameRule gameRule = new GameRule();
+    public TpPlayer tpPlayer = new TpPlayer();
+    class GameRule {
+        public boolean creeperExplosion = false;
+    }
+    class Pos {
+        int x;
+        int y;
+        int z;
+    }
+    class TpPlayer {
+        public int interval = 3;
+        public Pos homePos = new Pos();
+    }
 }

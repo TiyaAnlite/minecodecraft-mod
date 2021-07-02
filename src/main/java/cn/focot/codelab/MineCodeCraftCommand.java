@@ -4,8 +4,8 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
@@ -18,6 +18,8 @@ public class MineCodeCraftCommand {
 
     public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
         final LiteralArgumentBuilder<ServerCommandSource> literalArgumentBuilder = literal("minecodecraft")
+                .then(literal("home").
+                        executes((c) -> tpHome(c.getSource())))
                 .then(literal("config").
                         requires(MineCodeCraftCommand::needOp).
                         executes((c) -> showConfigString(c.getSource())).
@@ -33,8 +35,11 @@ public class MineCodeCraftCommand {
 //                .then(literal("test").
 //                        executes((c) -> testingFunc(c.getSource())))
                 ;
+        final LiteralArgumentBuilder<ServerCommandSource> tp_to_home = literal("home").
+                executes((c) -> tpHome(c.getSource()));
 
         dispatcher.register(literalArgumentBuilder);
+        dispatcher.register(tp_to_home);
     }
 
     static int testingFunc(ServerCommandSource source) {
@@ -66,6 +71,11 @@ public class MineCodeCraftCommand {
 
     static boolean needOp(ServerCommandSource source) {
         return source.hasPermissionLevel(2);
+    }
+
+    static int tpHome(ServerCommandSource source) throws CommandSyntaxException {
+        MineCodeCraftHelper.tpPlayer(source, MineCodeCraftHelper.getConfig().getConfig().tpPlayer.homePos);
+        return Command.SINGLE_SUCCESS;
     }
 
 
