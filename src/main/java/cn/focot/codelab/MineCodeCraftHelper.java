@@ -68,7 +68,7 @@ public class MineCodeCraftHelper {
 
     public static void onCreeperExplode(CreeperEntity creeper) {
         //LOGGER.info("Creeper %f %f %f explode!".formatted(creeper.getX(), creeper.getY(), creeper.getZ()));
-        server.getPlayerManager().broadcastChatMessage(Text.of("Creeper[%d, %d, %d] explode!".formatted((int) creeper.getX(), (int) creeper.getY(), (int) creeper.getZ())), MessageType.SYSTEM, Util.NIL_UUID);
+        server.getPlayerManager().broadcast(Text.of("Creeper[%d, %d, %d] explode!".formatted((int) creeper.getX(), (int) creeper.getY(), (int) creeper.getZ())), MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     public static Explosion.DestructionType onCreeperCreateExplosion(Explosion.DestructionType t) {
@@ -93,11 +93,11 @@ public class MineCodeCraftHelper {
     }
 
     public static void broadcastMessage(ServerCommandSource source, Text text) {
-        source.getMinecraftServer().getPlayerManager().broadcastChatMessage(text, MessageType.SYSTEM, Util.NIL_UUID);
+        source.getServer().getPlayerManager().broadcast(text, MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     public static void tpPlayer(ServerCommandSource source, ConfigBean.Pos targetPos) throws CommandSyntaxException {
-        ServerWorld serverOverworld = source.getMinecraftServer().getOverworld();
+        ServerWorld serverOverworld = source.getServer().getOverworld();
         if (targetPos.x == 0 && targetPos.y == 0 && targetPos.z == 0) {
             throw HOME_NOT_SET_EXCEPTION.create();
         }
