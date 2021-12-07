@@ -68,7 +68,11 @@ public class MineCodeCraftHelper {
 
     public static void onCreeperExplode(CreeperEntity creeper) {
         //LOGGER.info("Creeper %f %f %f explode!".formatted(creeper.getX(), creeper.getY(), creeper.getZ()));
-        server.getPlayerManager().broadcast(Text.of("Creeper[%d, %d, %d] explode!".formatted((int) creeper.getX(), (int) creeper.getY(), (int) creeper.getZ())), MessageType.SYSTEM, Util.NIL_UUID);
+        String broadcastString = "Creeper[%d, %d, %d] explode!".formatted((int) creeper.getX(), (int) creeper.getY(), (int) creeper.getZ());
+        if (!(creeper.getTarget() == null)) {
+            broadcastString += " Target is %s".formatted(creeper.getTarget().getName().asString());
+        }
+        server.getPlayerManager().broadcast(Text.of(broadcastString), MessageType.SYSTEM, Util.NIL_UUID);
     }
 
     public static Explosion.DestructionType onCreeperCreateExplosion(Explosion.DestructionType t) {
