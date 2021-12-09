@@ -1,6 +1,6 @@
-package cn.focot.codelab.mixin;
+package cn.focot.codelab.minecodecraft.mixins;
 
-import cn.focot.codelab.MineCodeCraftHelper;
+import cn.focot.codelab.minecodecraft.handlers.ServerHandler;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -26,11 +26,11 @@ public class ServerMixin {
             )
     )
     private void onTick(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
-        MineCodeCraftHelper.onTick((MinecraftServer) (Object) this);
+        ServerHandler.onTick((MinecraftServer) (Object) this);
     }
 
     @Inject(method = "loadWorld", at = @At("HEAD"))
     private void serverLoaded(CallbackInfo c) {
-        MineCodeCraftHelper.onServerLoaded((MinecraftServer) (Object) this);
+        ServerHandler.onServerLoaded((MinecraftServer) (Object) this);
     }
 }

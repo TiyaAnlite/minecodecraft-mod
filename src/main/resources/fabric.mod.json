@@ -19,7 +19,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "cn.focot.codelab.MineCodeCraftMod"
+      "cn.focot.codelab.minecodecraft.MineCodeCraftMod"
     ]
   },
   "mixins": [
