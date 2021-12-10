@@ -45,7 +45,7 @@ public class MineCodeCraftMod implements ModInitializer {
         ModMetadata modMetadata = loader.getModContainer(MOD_ID).orElseThrow(RuntimeException::new).getMetadata();
         version = modMetadata.getVersion().getFriendlyString();
         description = modMetadata.getDescription();
-        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> Command.registerCommand(dispatcher));
+        CommandRegistrationCallback.EVENT.register((dispatcher, dedicated) -> CommandRegister.registerCommand(dispatcher));
         ServerPlayConnectionEvents.JOIN.register(PlayerHandler::onPlayerJoin);
         ServerPlayConnectionEvents.DISCONNECT.register(PlayerHandler::onPlayerDisconnect);
         ServerPlayerEvents.ALLOW_DEATH.register(PlayerHandler::onPlayerDeath);

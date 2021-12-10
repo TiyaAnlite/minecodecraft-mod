@@ -11,6 +11,7 @@ public class ConfigBean {
     public String serverName = "MineCodeCraft";
     public String lunchTime = new SimpleDateFormat("yyyy-MM-dd").format(new Date().getTime());
     public Tips tips = new Tips();
+    public List<String> notice = new LinkedList<>();
 
     public class GameRule {
         public boolean creeperExplosion = false;

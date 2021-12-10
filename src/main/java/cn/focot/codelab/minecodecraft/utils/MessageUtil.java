@@ -4,6 +4,7 @@ import cn.focot.codelab.minecodecraft.MineCodeCraftMod;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 
@@ -14,7 +15,7 @@ public class MessageUtil {
         return msgPrefix;
     }
 
-    public static void replyMessage(ServerCommandSource source, Text text) {
+    public static void replyCommandMessage(ServerCommandSource source, Text text) {
         try {
             source.getPlayer().sendMessage(text, false);
         } catch (CommandSyntaxException e) {
@@ -22,19 +23,27 @@ public class MessageUtil {
         }
     }
 
-    public static void broadcastMessage(String text) {
-        broadcastTextMessage(Text.of(text));
+
+    public static void broadcastMessage(String text, boolean actionBar, boolean console) {
+        broadcastTextMessage(Text.of(text), actionBar, console);
     }
 
-    public static void broadcastTextMessage(Text text) {
-        MineCodeCraftMod.getMinecraftServer().getPlayerManager().broadcast(text, MessageType.SYSTEM, Util.NIL_UUID);
+    public static void broadcastTextMessage(Text text, boolean actionBar, boolean console) {
+        if (console) {
+            MineCodeCraftMod.getMinecraftServer().getPlayerManager().broadcast(text, actionBar ? MessageType.GAME_INFO : MessageType.SYSTEM, Util.NIL_UUID);
+        } else {
+            //No console message
+            for (ServerPlayerEntity player : MineCodeCraftMod.getMinecraftServer().getPlayerManager().getPlayerList()) {
+                player.sendMessage(text, actionBar ? MessageType.GAME_INFO : MessageType.SYSTEM, Util.NIL_UUID);
+            }
+        }
     }
 
     public static Text prefixMessage(String text) {
         return Text.of(msgPrefix + text);
     }
 
-    public static void broadcastPrefixMessage(String text) {
-        broadcastTextMessage(prefixMessage(text));
+    public static void broadcastPrefixMessage(String text, boolean actionBar, boolean console) {
+        broadcastTextMessage(prefixMessage(text), actionBar, console);
     }
 }

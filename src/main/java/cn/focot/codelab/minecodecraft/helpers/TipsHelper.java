@@ -10,35 +10,46 @@ import java.util.LinkedList;
 
 public class TipsHelper {
     private static TipsThread th;
+    private static boolean isLunch = false;
 
-    static public boolean lunch() {
-        if (!(th == null)) {
+    public static boolean lunch() {
+        if (isLunch) {
             return false;
         }
         th = new TipsThread();
         th.setName("TipsHelper");
         th.setDaemon(true);
         th.start();
+        isLunch = true;
         return true;
     }
+
+    public static void reloadTips() {
+        if (isLunch) {
+            th.setDirty(true);
+        }
+    }
+
 }
 
 class TipsThread extends Thread {
     private static final Logger LOGGER = MineCodeCraftMod.getLogger();
     private static final Config config = MineCodeCraftMod.getConfig();
-    private static final int interval = config.getConfigBean().tips.interval;
+    private int interval;
+    private LinkedList<String> tips;
+    private boolean dirty;
 
     @Override
     public void run() {
-        LinkedList<String> tips = new LinkedList<>(config.getConfigBean().tips.tips);
-        LOGGER.info("TipsThread start, loaded %d tips, interval %d".formatted(tips.size(), interval));
         MinecraftServer server = MineCodeCraftMod.getMinecraftServer();
+        LOGGER.info("TipsThread start");
+        this.getConfig();
         while (server.isRunning()) {
-            for (String t : tips) {
+            for (String t : this.tips) {
                 int ref = 0;
                 while (server.isRunning()) {
-                    if (ref >= interval) {
-                        MessageUtil.broadcastPrefixMessage(t);
+                    if (ref >= this.interval) {
+                        MessageUtil.broadcastPrefixMessage(t, false, false);
                         break;
                     } else {
                         ref++;
@@ -48,10 +59,33 @@ class TipsThread extends Thread {
                             LOGGER.error("TipsThread loop", e);
                         }
                     }
+                    if (this.isDirty()) {
+                        break;  //Update at upper
+                    }
+                }
+                if (this.isDirty()) {
+                    LOGGER.info("Reload tips config");
+                    this.getConfig();
+                    break;  //Update and restart
                 }
             }
 
         }
         LOGGER.info("TipsThread exit");
+    }
+
+    private void getConfig() {
+        this.tips = new LinkedList<>(config.getConfigBean().tips.tips);
+        this.interval = config.getConfigBean().tips.interval;
+        this.setDirty(false);
+        LOGGER.info("Loaded %d tips, interval %d".formatted(this.tips.size(), this.interval));
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public boolean isDirty() {
+        return dirty;
     }
 }

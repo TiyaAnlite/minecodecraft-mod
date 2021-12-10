@@ -17,7 +17,7 @@ public class CreeperHandler {
         if (!(creeper.getTarget() == null)) {
             broadcastString += " Target is %s".formatted(creeper.getTarget().getName().asString());
         }
-        MessageUtil.broadcastPrefixMessage(broadcastString);
+        MessageUtil.broadcastPrefixMessage(broadcastString, false, true);
     }
 
     public static Explosion.DestructionType onCreeperCreateExplosion(Explosion.DestructionType t) {
