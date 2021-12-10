@@ -90,6 +90,9 @@ public class PlayerHelper {
     public static void joinMOTD(ServerPlayerEntity player) {
         String msg = "§7=======§r Welcome back to §e%s§7 =======§r".formatted(config.getConfigBean().serverName + " " + MineCodeCraftMod.getMinecraftServer().getVersion());
         msg += "\n今天是§e%s§r开服的第§e%d§r天".formatted(config.getConfigBean().serverName, StatusHelper.lunchTime());
+        if (config.getConfigBean().copyRight) {
+            msg += "\n§7§oPowered by MineCodeCraft MOD %s © TiyaAnlite@Codelab§r".formatted(MineCodeCraftMod.getVersion());
+        }
         //player.sendMessage(Text.of(msg), false);
         player.sendSystemMessage(Text.of(msg), Util.NIL_UUID);
     }
