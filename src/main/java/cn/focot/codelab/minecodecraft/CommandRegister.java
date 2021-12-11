@@ -66,28 +66,13 @@ public class CommandRegister {
     }
 
     static int testingFunc(ServerCommandSource source) {
-        //MineCodeCraftHelper.LOGGER.info("ServerWorld: " + source.getMinecraftServer().getOverworld());
-//        ServerPlayerEntity player;
-//        try {
-//            player = source.getPlayer();
-//        } catch (CommandSyntaxException e) {
-//            MineCodeCraftHelper.getLogger().error("Not a player");
-//            return Command.SINGLE_SUCCESS;
-//        }
-//        Thread th = new Thread() {
-//            @Override
-//            public void run() {
-//                MineCodeCraftHelper.getLogger().info("Sleep start");
-//                try {
-//                    Thread.sleep(2000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                MineCodeCraftHelper.getLogger().info("Sleep done");
-//            }
-//        };
-//        th.setName("test@%s".formatted(player.getName().asString()));
-//        th.start();
+        try {
+            System.out.println("Sleep start.");
+            Thread.sleep(5000);
+            System.out.println("Sleep end.");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return Command.SINGLE_SUCCESS;
     }
 
