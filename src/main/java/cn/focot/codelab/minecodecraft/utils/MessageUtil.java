@@ -1,6 +1,5 @@
 package cn.focot.codelab.minecodecraft.utils;
 
-import cn.focot.codelab.minecodecraft.MineCodeCraftMod;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -8,7 +7,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 
-public class MessageUtil {
+public class MessageUtil extends AbstractUtil {
     private static final String msgPrefix = "§7[MineCodeCraft]§r ";
 
     public static String getMsgPrefix() {
@@ -30,10 +29,10 @@ public class MessageUtil {
 
     public static void broadcastTextMessage(Text text, boolean actionBar, boolean console) {
         if (console) {
-            MineCodeCraftMod.getMinecraftServer().getPlayerManager().broadcast(text, actionBar ? MessageType.GAME_INFO : MessageType.SYSTEM, Util.NIL_UUID);
+            getServer().getPlayerManager().broadcast(text, actionBar ? MessageType.GAME_INFO : MessageType.SYSTEM, Util.NIL_UUID);
         } else {
             //No console message
-            for (ServerPlayerEntity player : MineCodeCraftMod.getMinecraftServer().getPlayerManager().getPlayerList()) {
+            for (ServerPlayerEntity player : getServer().getPlayerManager().getPlayerList()) {
                 player.sendMessage(text, actionBar ? MessageType.GAME_INFO : MessageType.SYSTEM, Util.NIL_UUID);
             }
         }

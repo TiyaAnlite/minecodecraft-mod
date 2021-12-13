@@ -1,15 +1,11 @@
 package cn.focot.codelab.minecodecraft.handlers;
 
-import cn.focot.codelab.minecodecraft.Config;
-import cn.focot.codelab.minecodecraft.MineCodeCraftMod;
+import cn.focot.codelab.minecodecraft.helpers.CreeperHelper;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
 import net.minecraft.entity.mob.CreeperEntity;
 import net.minecraft.world.explosion.Explosion;
-import org.apache.logging.log4j.Logger;
 
-public class CreeperHandler {
-    private static final Logger LOGGER = MineCodeCraftMod.getLogger();
-    private static final Config config = MineCodeCraftMod.getConfig();
+public class CreeperHandler extends AbstractHandler {
 
     public static void onCreeperExplode(CreeperEntity creeper) {
         //LOGGER.info("Creeper %f %f %f explode!".formatted(creeper.getX(), creeper.getY(), creeper.getZ()));
@@ -21,15 +17,7 @@ public class CreeperHandler {
     }
 
     public static Explosion.DestructionType onCreeperCreateExplosion(Explosion.DestructionType t) {
-        //return t;
-        return config.getConfigBean().gameRule.creeperExplosion ? t : Explosion.DestructionType.NONE;
+        return CreeperHelper.isCreeperExplode() ? t : Explosion.DestructionType.NONE;
     }
 
-    public static boolean isCreeperExplode() {
-        return config.getConfigBean().gameRule.creeperExplosion;
-    }
-
-    public static void setCreeperExplode(boolean b) {
-        config.getConfigBean().gameRule.creeperExplosion = b;
-    }
 }

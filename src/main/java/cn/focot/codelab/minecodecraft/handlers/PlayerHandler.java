@@ -1,7 +1,5 @@
 package cn.focot.codelab.minecodecraft.handlers;
 
-import cn.focot.codelab.minecodecraft.Config;
-import cn.focot.codelab.minecodecraft.MineCodeCraftMod;
 import cn.focot.codelab.minecodecraft.helpers.PlayerHelper;
 import cn.focot.codelab.minecodecraft.helpers.StatusHelper;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
@@ -11,11 +9,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Util;
-import org.apache.logging.log4j.Logger;
 
-public class PlayerHandler {
-    private static final Logger LOGGER = MineCodeCraftMod.getLogger();
-    private static final Config config = MineCodeCraftMod.getConfig();
+public class PlayerHandler extends AbstractHandler {
 
     public static void onPlayerJoin(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
         ServerPlayerEntity player = handler.player;

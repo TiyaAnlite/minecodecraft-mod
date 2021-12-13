@@ -1,7 +1,7 @@
 package cn.focot.codelab.minecodecraft.helpers;
 
-import cn.focot.codelab.minecodecraft.*;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
+import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundIdS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
@@ -14,16 +14,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import org.apache.logging.log4j.Logger;
 
 import java.util.HashSet;
 import java.util.List;
 
-public class PlayerHelper {
-    private static final Logger LOGGER = MineCodeCraftMod.getLogger();
-    private static final Config config = MineCodeCraftMod.getConfig();
-    private static HashSet<String> teleportPlayer = new HashSet<>();
-
+public class PlayerHelper extends AbstractHelper {
+    private static final HashSet<String> teleportPlayer = new HashSet<>();
 
     public static void tpPlayer(ServerPlayerEntity player, ServerWorld world, BlockPos targetPos) {
         float f = MathHelper.wrapDegrees(player.getYaw());
@@ -34,7 +30,7 @@ public class PlayerHelper {
         Thread th = new Thread(() -> {
             teleportPlayer.add(playerName);
             try {
-                player.sendMessage(Text.of("§ePoint to§r[x:%d, y:%d, z:%d]§e, will be teleport in §4%d§e seconds".formatted(targetPos.getX(), targetPos.getY(), targetPos.getZ(), config.getConfigBean().tpPlayer.interval)), true);
+                player.sendMessage(Text.of("§e已定位至§r[x:%d, y:%d, z:%d]§e, 将在§4%d§e秒后传送".formatted(targetPos.getX(), targetPos.getY(), targetPos.getZ(), config.getConfigBean().tpPlayer.interval)), true);
                 int sec = 0;
                 Identifier waitingSound = new Identifier("minecraft", "entity.experience_orb.pickup");
                 Identifier teleportSound = new Identifier("minecraft", "entity.enderman.teleport");
@@ -43,6 +39,10 @@ public class PlayerHelper {
                 while (sec < config.getConfigBean().tpPlayer.interval) {
                     //Single player
                     //player.playSound(new SoundEvent(waitingSound), SoundCategory.MASTER, 1.0F, 1.0F);
+                    if (player.isDead()) {
+                        player.sendMessage(Text.of("§4检测到玩家死亡，传送计划被取消§r"), false);
+                        return;
+                    }
                     playerVec3d = player.getEyePos();
                     player.networkHandler.sendPacket(new PlaySoundIdS2CPacket(waitingSound, SoundCategory.MASTER, playerVec3d, 1.0F, 1.0F));
                     //LOGGER.info("Waiting at: %d".formatted(sec));
@@ -57,8 +57,17 @@ public class PlayerHelper {
                 if (player.isSleeping()) {
                     player.wakeUp(true, true);
                 }
+                if (player.isDead()) {
+                    player.sendMessage(Text.of("§4检测到玩家死亡，传送计划被取消§r"), false);
+                    return;
+                }
                 player.teleport(world, targetPos.getX(), targetPos.getY(), targetPos.getZ(), f, g);
-                player.refreshPositionAfterTeleport(targetVec3d);
+                if (!world.equals(playerWorld)) {
+                    // Fix experience bar when change world
+                    LOGGER.info("Sync player experience bar");
+                    player.networkHandler.sendPacket(new ExperienceBarUpdateS2CPacket(player.experienceProgress, player.totalExperience, player.experienceLevel));
+                }
+                //player.refreshPositionAfterTeleport(targetVec3d);
                 player.setHeadYaw(f);
                 LOGGER.info("Teleported %s to %d, %d, %d".formatted(player.getName().asString(), targetPos.getX(), targetPos.getY(), targetPos.getZ()));
                 List<ServerPlayerEntity> serverPlayers = world.getPlayers();
@@ -88,10 +97,10 @@ public class PlayerHelper {
     }
 
     public static void joinMOTD(ServerPlayerEntity player) {
-        String msg = "§7=======§r Welcome back to §e%s§7 =======§r".formatted(config.getConfigBean().serverName + " " + MineCodeCraftMod.getMinecraftServer().getVersion());
-        msg += "\n今天是§e%s§r开服的第§e%d§r天".formatted(config.getConfigBean().serverName, StatusHelper.lunchTime());
+        String msg = "§7=======§r Welcome back to §e%s§7 =======§r".formatted(config.getConfigBean().serverName + " " + getServer().getVersion());
+        msg += "\n今天是§e%s§r开服的第§e%d§r天".formatted(config.getConfigBean().serverName, StatusHelper.lunchedTime());
         if (config.getConfigBean().copyRight) {
-            msg += "\n§7§oPowered by MineCodeCraft MOD %s © TiyaAnlite@Codelab§r".formatted(MineCodeCraftMod.getVersion());
+            msg += "\n§7§oPowered by MineCodeCraft MOD %s © TiyaAnlite@Codelab§r".formatted(version);
         }
         //player.sendMessage(Text.of(msg), false);
         player.sendSystemMessage(Text.of(msg), Util.NIL_UUID);

@@ -1,10 +1,6 @@
 package cn.focot.codelab.minecodecraft;
 
-import cn.focot.codelab.minecodecraft.handlers.CreeperHandler;
-import cn.focot.codelab.minecodecraft.helpers.EventTrigger;
-import cn.focot.codelab.minecodecraft.helpers.PlayerHelper;
-import cn.focot.codelab.minecodecraft.helpers.PlayerPos;
-import cn.focot.codelab.minecodecraft.helpers.StatusHelper;
+import cn.focot.codelab.minecodecraft.helpers.*;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -12,6 +8,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -29,17 +26,27 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class CommandRegister {
     final static String[] trueOrFalse = new String[]{"true", "false"};
     private static final Config config = MineCodeCraftMod.getConfig();
+    public static final SimpleCommandExceptionType SERVER_SAVE_FAILED = new SimpleCommandExceptionType(Text.of("§c尝试存档时失败"));
     public static final SimpleCommandExceptionType HOME_NOT_SET_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cHome pos not set.§r"));
     public static final SimpleCommandExceptionType INVALID_POSITION_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.teleport.invalidPosition"));
     public static final SimpleCommandExceptionType UNSUPPORTED_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cUnsupported entity type§r"));
     public static final SimpleCommandExceptionType TELEPORT_IN_PROGRESS = new SimpleCommandExceptionType(Text.of("§c传送进行中，请耐心等待上一个传送完成§r"));
 
     public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
+        final LiteralArgumentBuilder<ServerCommandSource> tpToHome = literal("home").
+                executes((c) -> tpHome(c.getSource()));
+        final LiteralArgumentBuilder<ServerCommandSource> tpToBack = literal("back").
+                executes((c) -> tpBack(c.getSource()));
+        LiteralCommandNode<ServerCommandSource> tpHomeNode = dispatcher.register(tpToHome);
+        LiteralCommandNode<ServerCommandSource> tpBackNode = dispatcher.register(tpToBack);
+
         final LiteralArgumentBuilder<ServerCommandSource> literalArgumentBuilder = literal("minecodecraft")
+                .then(literal("save").
+                        executes((c) -> saveServer(c.getSource())))
                 .then(literal("home").
-                        executes((c) -> tpHome(c.getSource())))
-                .then(literal("back")).
-                executes((c) -> tpBack(c.getSource()))
+                        redirect(tpHomeNode))
+                .then(literal("back").
+                        redirect(tpBackNode))
                 .then(literal("config").
                         requires(CommandRegister::needOp).
                         executes((c) -> showConfigString(c.getSource())).
@@ -55,14 +62,8 @@ public class CommandRegister {
 //                .then(literal("test").
 //                        executes((c) -> testingFunc(c.getSource())))
                 ;
-        final LiteralArgumentBuilder<ServerCommandSource> tp_to_home = literal("home").
-                executes((c) -> tpHome(c.getSource()));
-        final LiteralArgumentBuilder<ServerCommandSource> tp_to_back = literal("back").
-                executes((c) -> tpBack(c.getSource()));
 
         dispatcher.register(literalArgumentBuilder);
-        dispatcher.register(tp_to_home);
-        dispatcher.register(tp_to_back);
     }
 
     static int testingFunc(ServerCommandSource source) {
@@ -79,6 +80,14 @@ public class CommandRegister {
 
     static boolean needOp(ServerCommandSource source) {
         return source.hasPermissionLevel(2);
+    }
+
+    static int saveServer(ServerCommandSource source) throws CommandSyntaxException {
+        if (ServerHelper.saveServer()) {
+            return Command.SINGLE_SUCCESS;
+        } else {
+            throw SERVER_SAVE_FAILED.create();
+        }
     }
 
 
@@ -121,15 +130,15 @@ public class CommandRegister {
 
 
     static int showCreeperExplosion(ServerCommandSource source) {
-        Text text = Text.of("CreeperExplosion: %b".formatted(CreeperHandler.isCreeperExplode()));
+        Text text = Text.of("CreeperExplosion: %b".formatted(CreeperHelper.isCreeperExplode()));
         MessageUtil.replyCommandMessage(source, text);
         return Command.SINGLE_SUCCESS;
     }
 
     static int setCreeperExplosion(ServerCommandSource source, String newSet) {
         boolean s = Boolean.parseBoolean(newSet);
-        CreeperHandler.setCreeperExplode(s);
-        Text text = Text.of("CreeperExplosion set to %s".formatted(CreeperHandler.isCreeperExplode() ? "TRUE" : "FALSE"));
+        CreeperHelper.setCreeperExplode(s);
+        Text text = Text.of("CreeperExplosion set to %s".formatted(CreeperHelper.isCreeperExplode() ? "TRUE" : "FALSE"));
         MessageUtil.replyCommandMessage(source, text);
         return Command.SINGLE_SUCCESS;
     }
