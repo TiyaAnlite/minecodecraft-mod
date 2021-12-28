@@ -7,10 +7,10 @@ import net.minecraft.util.math.BlockPos;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StatusHelper extends AbstractHelper {
-    private static final HashMap<String, PlayerPos> playerPosHistory = new HashMap<>();
+    private static final ConcurrentHashMap<String, PlayerPos> playerPosHistory = new ConcurrentHashMap<>();
 
     public static int lunchedTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");

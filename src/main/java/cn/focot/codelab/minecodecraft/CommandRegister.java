@@ -26,11 +26,11 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class CommandRegister {
     final static String[] trueOrFalse = new String[]{"true", "false"};
     private static final Config config = MineCodeCraftMod.getConfig();
-    public static final SimpleCommandExceptionType SERVER_SAVE_FAILED = new SimpleCommandExceptionType(Text.of("§c尝试存档时失败"));
+    public static final SimpleCommandExceptionType SERVER_SAVE_FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c尝试存档时失败"));
     public static final SimpleCommandExceptionType HOME_NOT_SET_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cHome pos not set.§r"));
     public static final SimpleCommandExceptionType INVALID_POSITION_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.teleport.invalidPosition"));
     public static final SimpleCommandExceptionType UNSUPPORTED_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cUnsupported entity type§r"));
-    public static final SimpleCommandExceptionType TELEPORT_IN_PROGRESS = new SimpleCommandExceptionType(Text.of("§c传送进行中，请耐心等待上一个传送完成§r"));
+    public static final SimpleCommandExceptionType TELEPORT_IN_PROGRESS_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c传送进行中，请耐心等待上一个传送完成§r"));
 
     public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
         final LiteralArgumentBuilder<ServerCommandSource> tpToHome = literal("home").
@@ -66,6 +66,7 @@ public class CommandRegister {
         dispatcher.register(literalArgumentBuilder);
     }
 
+/*
     static int testingFunc(ServerCommandSource source) {
         try {
             System.out.println("Sleep start.");
@@ -76,6 +77,7 @@ public class CommandRegister {
         }
         return Command.SINGLE_SUCCESS;
     }
+*/
 
 
     static boolean needOp(ServerCommandSource source) {
@@ -86,7 +88,7 @@ public class CommandRegister {
         if (ServerHelper.saveServer()) {
             return Command.SINGLE_SUCCESS;
         } else {
-            throw SERVER_SAVE_FAILED.create();
+            throw SERVER_SAVE_FAILED_EXCEPTION.create();
         }
     }
 
@@ -106,7 +108,7 @@ public class CommandRegister {
             throw UNSUPPORTED_ENTITY_EXCEPTION.create();
         }
         if (PlayerHelper.isTeleportPlayer(player)) {
-            throw TELEPORT_IN_PROGRESS.create();
+            throw TELEPORT_IN_PROGRESS_EXCEPTION.create();
         }
         PlayerHelper.tpPlayer(player, world, targetPos);
         return Command.SINGLE_SUCCESS;
@@ -122,7 +124,7 @@ public class CommandRegister {
             throw INVALID_POSITION_EXCEPTION.create();
         }
         if (PlayerHelper.isTeleportPlayer(player)) {
-            throw TELEPORT_IN_PROGRESS.create();
+            throw TELEPORT_IN_PROGRESS_EXCEPTION.create();
         }
         PlayerHelper.tpPlayer(player, playerPos.getWorld(), playerPos.getPos());
         return Command.SINGLE_SUCCESS;
