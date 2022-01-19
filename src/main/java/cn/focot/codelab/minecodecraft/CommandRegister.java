@@ -47,6 +47,7 @@ public class CommandRegister {
 
         final LiteralArgumentBuilder<ServerCommandSource> literalArgumentBuilder = literal("minecodecraft")
                 .then(literal("save").
+                        requires(CommandRegister::needOp).
                         executes((c) -> saveServer(c.getSource())))
                 .then(literal("home").
                         executes((c) -> tpHome(c.getSource())))
@@ -92,7 +93,7 @@ public class CommandRegister {
     }
 
     static int saveServer(ServerCommandSource source) throws CommandSyntaxException {
-        if (ServerHelper.saveServer()) {
+        if (ServerHelper.saveServer(false, true, true)) {
             return Command.SINGLE_SUCCESS;
         } else {
             throw SERVER_SAVE_FAILED_EXCEPTION.create();
