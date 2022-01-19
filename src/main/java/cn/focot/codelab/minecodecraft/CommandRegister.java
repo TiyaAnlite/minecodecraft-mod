@@ -2,13 +2,13 @@ package cn.focot.codelab.minecodecraft;
 
 import cn.focot.codelab.minecodecraft.helpers.*;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
+import cn.focot.codelab.minecodecraft.utils.WorldUtil;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,6 +16,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
@@ -31,22 +32,28 @@ public class CommandRegister {
     public static final SimpleCommandExceptionType INVALID_POSITION_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.teleport.invalidPosition"));
     public static final SimpleCommandExceptionType UNSUPPORTED_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cUnsupported entity type§r"));
     public static final SimpleCommandExceptionType TELEPORT_IN_PROGRESS_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c传送进行中，请耐心等待上一个传送完成§r"));
+    public static final SimpleCommandExceptionType TELEPORT_TO_VOID_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c无法传送到虚空§r"));
 
     public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
         final LiteralArgumentBuilder<ServerCommandSource> tpToHome = literal("home").
                 executes((c) -> tpHome(c.getSource()));
         final LiteralArgumentBuilder<ServerCommandSource> tpToBack = literal("back").
                 executes((c) -> tpBack(c.getSource()));
-        LiteralCommandNode<ServerCommandSource> tpHomeNode = dispatcher.register(tpToHome);
-        LiteralCommandNode<ServerCommandSource> tpBackNode = dispatcher.register(tpToBack);
+        final LiteralArgumentBuilder<ServerCommandSource> atHere = literal("here").
+                executes((c) -> playerHere(c.getSource()));
+        dispatcher.register(tpToHome);
+        dispatcher.register(tpToBack);
+        dispatcher.register(atHere);
 
         final LiteralArgumentBuilder<ServerCommandSource> literalArgumentBuilder = literal("minecodecraft")
                 .then(literal("save").
                         executes((c) -> saveServer(c.getSource())))
                 .then(literal("home").
-                        redirect(tpHomeNode))
+                        executes((c) -> tpHome(c.getSource())))
                 .then(literal("back").
-                        redirect(tpBackNode))
+                        executes((c) -> tpBack(c.getSource())))
+                .then(literal("here").
+                        executes((c) -> playerHere(c.getSource())))
                 .then(literal("config").
                         requires(CommandRegister::needOp).
                         executes((c) -> showConfigString(c.getSource())).
@@ -92,21 +99,26 @@ public class CommandRegister {
         }
     }
 
+    static private ServerPlayerEntity getPlayer(ServerCommandSource source) throws CommandSyntaxException {
+        Entity target = source.getEntityOrThrow();
+        if (!(target instanceof ServerPlayerEntity player)) {
+            throw UNSUPPORTED_ENTITY_EXCEPTION.create();
+        }
+        return player;
+    }
+
 
     static int tpHome(ServerCommandSource source) throws CommandSyntaxException {
         ConfigBean.Pos homePos = config.getConfigBean().tpPlayer.homePos;
         if (homePos.x == 0 && homePos.y == 0 && homePos.z == 0) {
             throw CommandRegister.HOME_NOT_SET_EXCEPTION.create();
         }
-        BlockPos targetPos = new BlockPos(homePos.x, homePos.y, homePos.z);
+        Vec3d targetPos = new Vec3d(homePos.x, homePos.y, homePos.z);
         ServerWorld world = source.getServer().getOverworld();
-        if (!World.isValid(targetPos)) {
+        if (!World.isValid(new BlockPos(targetPos))) {
             throw INVALID_POSITION_EXCEPTION.create();
         }
-        Entity target = source.getEntityOrThrow();
-        if (!(target instanceof ServerPlayerEntity player)) {
-            throw UNSUPPORTED_ENTITY_EXCEPTION.create();
-        }
+        ServerPlayerEntity player = getPlayer(source);
         if (PlayerHelper.isTeleportPlayer(player)) {
             throw TELEPORT_IN_PROGRESS_EXCEPTION.create();
         }
@@ -115,18 +127,27 @@ public class CommandRegister {
     }
 
     static int tpBack(ServerCommandSource source) throws CommandSyntaxException {
-        Entity target = source.getEntityOrThrow();
-        if (!(target instanceof ServerPlayerEntity player)) {
-            throw UNSUPPORTED_ENTITY_EXCEPTION.create();
-        }
+        ServerPlayerEntity player = getPlayer(source);
         PlayerPos playerPos = StatusHelper.getPlayerPosHistory(player.getName().asString());
-        if (playerPos == null || !(World.isValid(playerPos.getPos())) || playerPos.getPos().getY() < 0) {
+        if (playerPos == null) {
             throw INVALID_POSITION_EXCEPTION.create();
+        }
+        BlockPos intPos = new BlockPos(playerPos.getPos());
+        if (!(World.isValid(intPos))) {
+            throw INVALID_POSITION_EXCEPTION.create();
+        }
+        if (!(WorldUtil.isCanTeleportPos(playerPos.getWorld(), intPos))) {
+            throw TELEPORT_TO_VOID_EXCEPTION.create();
         }
         if (PlayerHelper.isTeleportPlayer(player)) {
             throw TELEPORT_IN_PROGRESS_EXCEPTION.create();
         }
         PlayerHelper.tpPlayer(player, playerPos.getWorld(), playerPos.getPos());
+        return Command.SINGLE_SUCCESS;
+    }
+
+    static int playerHere(ServerCommandSource source) throws CommandSyntaxException {
+        PlayerHelper.here(getPlayer(source));
         return Command.SINGLE_SUCCESS;
     }
 

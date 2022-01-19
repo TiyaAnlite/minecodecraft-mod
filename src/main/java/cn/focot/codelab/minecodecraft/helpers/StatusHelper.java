@@ -2,7 +2,7 @@ package cn.focot.codelab.minecodecraft.helpers;
 
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,15 +26,14 @@ public class StatusHelper extends AbstractHelper {
     }
 
     public static void updatePlayerPosHistory(ServerPlayerEntity player) {
-        BlockPos pos = new BlockPos(player.getPos());
         ServerWorld world = player.getWorld();
-        updatePlayerPosHistory(player.getName().asString(), pos, world);
+        updatePlayerPosHistory(player.getName().asString(), player.getPos(), world);
     }
 
-    public static void updatePlayerPosHistory(String name, BlockPos pos, ServerWorld world) {
+    public static void updatePlayerPosHistory(String name, Vec3d pos, ServerWorld world) {
         PlayerPos playerPos = new PlayerPos(pos, world);
         playerPosHistory.put(name, playerPos);
-        LOGGER.info("Updated %s pos history: [%s]".formatted(name, pos.toShortString()));
+        LOGGER.info("Updated %s pos history: [%.2f, %.2f, %.2f]".formatted(name, pos.getX(), pos.getY(), pos.getZ()));
     }
 
     public static PlayerPos getPlayerPosHistory(String name) {

@@ -18,7 +18,7 @@ public class Config {
     public static Gson gson_pretty = new GsonBuilder().setPrettyPrinting().create();
 
     Config(@Nullable String path) {
-        this.confPath = Objects.requireNonNullElse(path, "config/minecodecraft.json");
+        this.confPath = "config/" + Objects.requireNonNullElse(path, "minecodecraft.json");
         this.loadConfig();
     }
 
@@ -52,6 +52,10 @@ public class Config {
     }
 
     private boolean writeConfigToFile() {
+        File configDir = new File("config");
+        if (!configDir.isDirectory()) {
+            configDir.mkdir();
+        }
         try {
             FileWriter fileWriter = new FileWriter(this.confPath, StandardCharsets.UTF_8);
             fileWriter.write(this.getConfigString(true));

@@ -12,6 +12,7 @@ public class ConfigBean {
     public String lunchTime = new SimpleDateFormat("yyyy-MM-dd").format(new Date().getTime());
     public Tips tips = new Tips();
     public List<String> notice = new LinkedList<>();
+    public int playerHereGlowingTime = 30;
     public int playerLatencyUpdateInterval = 30;
     public boolean copyRight = true;
 
