@@ -14,6 +14,7 @@ public class ConfigBean {
     public List<String> notice = new LinkedList<>();
     public int worldAutoSaveInterval = 0;
     public int playerHereGlowingTime = 30;
+    public int playerWhereRequestExpire = 30;
     public int playerLatencyUpdateInterval = 30;
     public boolean copyRight = true;
 

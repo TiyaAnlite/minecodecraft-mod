@@ -21,11 +21,10 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class PlayerHelper extends AbstractHelper {
-    private static final HashSet<String> teleportPlayer = new HashSet<>();
+    private static final Set<String> teleportPlayer = Collections.synchronizedSet(new HashSet<>());
 
     public static void tpPlayer(ServerPlayerEntity player, ServerWorld world, Vec3d targetPos) {
         float f = MathHelper.wrapDegrees(player.getYaw());
@@ -94,6 +93,15 @@ public class PlayerHelper extends AbstractHelper {
     }
 
     public static void here(ServerPlayerEntity player) {
+        PlayerWhereRequest request = StatusHelper.getPlayerWhereRequest(player);
+        if (!(Objects.isNull(request))) {
+            StatusHelper.removePlayerWhereRequest(player);
+            player.sendMessage(Text.of("已接受§3%s§r的位置广播请求".formatted(request.getSourceName())));
+            ServerPlayerEntity requestPlayer = request.getSource();
+            if (!(Objects.isNull(requestPlayer))) {
+                requestPlayer.sendMessage(Text.of("§3%s§r已接受你的位置共享请求".formatted(request.getTargetName())));
+            }
+        }
         player.addStatusEffect(new StatusEffectInstance(StatusEffect.byRawId(24), config.getConfigBean().playerHereGlowingTime * 20));
         player.sendMessage(Text.of("§6你将会被高亮§5%d§6秒".formatted(config.getConfigBean().playerHereGlowingTime)), true);
         String playerName = player.getName().getString();
@@ -116,6 +124,12 @@ public class PlayerHelper extends AbstractHelper {
                 tellPlayer.sendMessage(MessageUtil.prefixMessage("§3%s§7与你".formatted(playerName) + (world.equals(tellPlayer.getWorld()) ? "相距约§a%.2f米".formatted(WorldUtil.distance(player.getPos(), tellPlayer.getPos())) : "不在同一个世界")));
             }
         }
+    }
+
+    public static void whereRequest(ServerPlayerEntity targetPlayer, ServerPlayerEntity requestPlayer) {
+        targetPlayer.sendMessage(Text.of("§3%s§a请求你广播当前位置，同意请在§6%d秒§a内输入§6/here".formatted(requestPlayer.getName().getString(), config.getConfigBean().playerWhereRequestExpire)));
+        StatusHelper.addPlayerWhereRequest(targetPlayer, requestPlayer);
+        targetPlayer.sendMessage(Text.of("位置共享请求已发送"));
     }
 
     public static boolean isTeleportPlayer(String name) {

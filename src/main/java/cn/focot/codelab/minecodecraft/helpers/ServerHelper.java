@@ -67,4 +67,9 @@ public class ServerHelper extends AbstractHelper {
         return false;
     }
 
+    public static void tickServer() {
+        updatePlayerLatency();
+        autoSave();
+    }
+
 }

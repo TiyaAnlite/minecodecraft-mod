@@ -9,6 +9,8 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.tree.LiteralCommandNode;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -24,50 +26,56 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class CommandRegister {
-    final static String[] trueOrFalse = new String[]{"true", "false"};
+    public final static String[] trueOrFalse = new String[]{"true", "false"};
     private static final Config config = MineCodeCraftMod.getConfig();
     public static final SimpleCommandExceptionType SERVER_SAVE_FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c尝试存档时失败"));
     public static final SimpleCommandExceptionType HOME_NOT_SET_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cHome pos not set.§r"));
     public static final SimpleCommandExceptionType INVALID_POSITION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.teleport.invalidPosition"));
-    public static final SimpleCommandExceptionType UNSUPPORTED_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cUnsupported entity type§r"));
+    public static final SimpleCommandExceptionType UNSUPPORTED_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c不支持的实体类型§r"));
     public static final SimpleCommandExceptionType TELEPORT_IN_PROGRESS_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c传送进行中，请耐心等待上一个传送完成§r"));
     public static final SimpleCommandExceptionType TELEPORT_TO_VOID_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c无法传送到虚空§r"));
 
     public static void registerCommand(CommandDispatcher<ServerCommandSource> dispatcher) {
-        final LiteralArgumentBuilder<ServerCommandSource> tpToHome = literal("home").
-                executes((c) -> tpHome(c.getSource()));
-        final LiteralArgumentBuilder<ServerCommandSource> tpToBack = literal("back").
-                executes((c) -> tpBack(c.getSource()));
-        final LiteralArgumentBuilder<ServerCommandSource> atHere = literal("here").
-                executes((c) -> playerHere(c.getSource()));
-        dispatcher.register(tpToHome);
-        dispatcher.register(tpToBack);
-        dispatcher.register(atHere);
+        final LiteralArgumentBuilder<ServerCommandSource> tpToHome = literal("home")
+                .executes((c) -> tpHome(c.getSource()));
+        final LiteralArgumentBuilder<ServerCommandSource> tpToBack = literal("back")
+                .executes((c) -> tpBack(c.getSource()));
+        final LiteralArgumentBuilder<ServerCommandSource> atHere = literal("here")
+                .executes((c) -> playerHere(c.getSource()));
+        final LiteralArgumentBuilder<ServerCommandSource> atWhere = literal("where")
+                .then(argument("player", EntityArgumentType.player())
+                        .executes((c) -> playerWhere(c.getSource(), EntityArgumentType.getEntity(c, "player"))));
+        LiteralCommandNode<ServerCommandSource> homeCommand = dispatcher.register(tpToHome);
+        LiteralCommandNode<ServerCommandSource> backCommand = dispatcher.register(tpToBack);
+        LiteralCommandNode<ServerCommandSource> hereCommand = dispatcher.register(atHere);
+        LiteralCommandNode<ServerCommandSource> whereCommand = dispatcher.register(atWhere);
 
         final LiteralArgumentBuilder<ServerCommandSource> literalArgumentBuilder = literal("minecodecraft")
-                .then(literal("save").
-                        requires(CommandRegister::needOp).
-                        executes((c) -> saveServer(c.getSource())))
-                .then(literal("home").
-                        executes((c) -> tpHome(c.getSource())))
-                .then(literal("back").
-                        executes((c) -> tpBack(c.getSource())))
-                .then(literal("here").
-                        executes((c) -> playerHere(c.getSource())))
-                .then(literal("config").
-                        requires(CommandRegister::needOp).
-                        executes((c) -> showConfigString(c.getSource())).
-                        then(argument("opt", StringArgumentType.word()).
-                                suggests((c, b) -> suggestMatching(new String[]{"save", "reload"}, b)).
-                                executes((c) -> configOpt(c.getSource(), getString(c, "opt")))))
-                .then(literal("creeperExplosion").
-                        requires(CommandRegister::needOp).
-                        executes((c) -> showCreeperExplosion(c.getSource())).
-                        then(argument("bool", StringArgumentType.word()).
-                                suggests((c, b) -> suggestMatching(trueOrFalse, b)).
-                                executes((c) -> setCreeperExplosion(c.getSource(), getString(c, "bool")))))
-//                .then(literal("test").
-//                        executes((c) -> testingFunc(c.getSource())))
+                .then(literal("save")
+                        .requires(CommandRegister::needOp)
+                        .executes((c) -> saveServer(c.getSource())))
+                .then(literal("home")
+                        .redirect(homeCommand))
+                .then(literal("back")
+                        .redirect(backCommand))
+                .then(literal("here")
+                        .redirect(hereCommand))
+                .then(literal("where")
+                        .redirect(whereCommand))
+                .then(literal("config")
+                        .requires(CommandRegister::needOp)
+                        .executes((c) -> showConfigString(c.getSource()))
+                        .then(argument("opt", StringArgumentType.string())
+                                .suggests((c, b) -> suggestMatching(new String[]{"save", "reload"}, b))
+                                .executes((c) -> configOpt(c.getSource(), getString(c, "opt")))))
+                .then(literal("creeperExplosion")
+                        .requires(CommandRegister::needOp)
+                        .executes((c) -> showCreeperExplosion(c.getSource()))
+                        .then(argument("bool", StringArgumentType.string())
+                                .suggests((c, b) -> suggestMatching(trueOrFalse, b))
+                                .executes((c) -> setCreeperExplosion(c.getSource(), getString(c, "bool")))))
+//              .then(literal("test")
+//                      .executes((c) -> testingFunc(c.getSource())))
                 ;
 
         dispatcher.register(literalArgumentBuilder);
@@ -87,11 +95,11 @@ public class CommandRegister {
 */
 
 
-    static boolean needOp(ServerCommandSource source) {
+    static private boolean needOp(ServerCommandSource source) {
         return source.hasPermissionLevel(2);
     }
 
-    static int saveServer(ServerCommandSource source) throws CommandSyntaxException {
+    static private int saveServer(ServerCommandSource source) throws CommandSyntaxException {
         if (ServerHelper.saveServer(false, true, true)) {
             return Command.SINGLE_SUCCESS;
         } else {
@@ -101,14 +109,18 @@ public class CommandRegister {
 
     static private ServerPlayerEntity getPlayer(ServerCommandSource source) throws CommandSyntaxException {
         Entity target = source.getEntityOrThrow();
-        if (!(target instanceof ServerPlayerEntity player)) {
+        return getPlayer(target);
+    }
+
+    static private ServerPlayerEntity getPlayer(Entity entity) throws CommandSyntaxException {
+        if (!(entity instanceof ServerPlayerEntity player)) {
             throw UNSUPPORTED_ENTITY_EXCEPTION.create();
         }
         return player;
     }
 
 
-    static int tpHome(ServerCommandSource source) throws CommandSyntaxException {
+    static private int tpHome(ServerCommandSource source) throws CommandSyntaxException {
         ConfigBean.Pos homePos = config.getConfigBean().tpPlayer.homePos;
         if (homePos.x == 0 && homePos.y == 0 && homePos.z == 0) {
             throw CommandRegister.HOME_NOT_SET_EXCEPTION.create();
@@ -126,7 +138,7 @@ public class CommandRegister {
         return Command.SINGLE_SUCCESS;
     }
 
-    static int tpBack(ServerCommandSource source) throws CommandSyntaxException {
+    static private int tpBack(ServerCommandSource source) throws CommandSyntaxException {
         ServerPlayerEntity player = getPlayer(source);
         PlayerPos playerPos = StatusHelper.getPlayerPosHistory(player.getName().getString());
         if (playerPos == null) {
@@ -146,19 +158,29 @@ public class CommandRegister {
         return Command.SINGLE_SUCCESS;
     }
 
-    static int playerHere(ServerCommandSource source) throws CommandSyntaxException {
+    static private int playerHere(ServerCommandSource source) throws CommandSyntaxException {
         PlayerHelper.here(getPlayer(source));
         return Command.SINGLE_SUCCESS;
     }
 
+    static private int playerWhere(ServerCommandSource source, Entity entity) throws CommandSyntaxException {
+        ServerPlayerEntity targetPlayer = getPlayer(entity);
+        ServerPlayerEntity sourcePlayer = getPlayer(source);
+        if (needOp(source) || targetPlayer.equals(sourcePlayer)) {
+            PlayerHelper.here(targetPlayer);
+        } else {
+            PlayerHelper.whereRequest(targetPlayer, sourcePlayer);
+        }
+        return Command.SINGLE_SUCCESS;
+    }
 
-    static int showCreeperExplosion(ServerCommandSource source) {
+    static private int showCreeperExplosion(ServerCommandSource source) {
         Text text = Text.of("CreeperExplosion: %b".formatted(CreeperHelper.isCreeperExplode()));
         MessageUtil.replyCommandMessage(source, text);
         return Command.SINGLE_SUCCESS;
     }
 
-    static int setCreeperExplosion(ServerCommandSource source, String newSet) {
+    static private int setCreeperExplosion(ServerCommandSource source, String newSet) {
         boolean s = Boolean.parseBoolean(newSet);
         CreeperHelper.setCreeperExplode(s);
         Text text = Text.of("CreeperExplosion set to %s".formatted(CreeperHelper.isCreeperExplode() ? "TRUE" : "FALSE"));
@@ -166,13 +188,13 @@ public class CommandRegister {
         return Command.SINGLE_SUCCESS;
     }
 
-    static int showConfigString(ServerCommandSource source) {
+    static private int showConfigString(ServerCommandSource source) {
         Text text = Text.of(config.getConfigString(false));
         MessageUtil.replyCommandMessage(source, text);
         return Command.SINGLE_SUCCESS;
     }
 
-    static int configOpt(ServerCommandSource source, String opt) {
+    static private int configOpt(ServerCommandSource source, String opt) {
         Text reportText = Text.of("");
         switch (opt) {
             case "save" -> {

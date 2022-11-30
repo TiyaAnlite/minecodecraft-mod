@@ -27,7 +27,7 @@ public class ServerHandler extends AbstractHandler {
     }
 
     public static void onWorldTick(MinecraftServer server) {
-        ServerHelper.updatePlayerLatency();
-        ServerHelper.autoSave();
+        ServerHelper.tickServer();
+        StatusHelper.tickServerStatus();
     }
 }
