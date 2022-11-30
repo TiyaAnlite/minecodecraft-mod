@@ -27,7 +27,7 @@ public class StatusHelper extends AbstractHelper {
 
     public static void updatePlayerPosHistory(ServerPlayerEntity player) {
         ServerWorld world = player.getWorld();
-        updatePlayerPosHistory(player.getName().asString(), player.getPos(), world);
+        updatePlayerPosHistory(player.getName().getString(), player.getPos(), world);
     }
 
     public static void updatePlayerPosHistory(String name, Vec3d pos, ServerWorld world) {

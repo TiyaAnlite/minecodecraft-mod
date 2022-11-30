@@ -3,7 +3,7 @@ package cn.focot.codelab.minecodecraft.handlers;
 import cn.focot.codelab.minecodecraft.helpers.CreeperHelper;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
 import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.world.explosion.Explosion;
+import net.minecraft.world.World;
 
 public class CreeperHandler extends AbstractHandler {
 
@@ -11,13 +11,13 @@ public class CreeperHandler extends AbstractHandler {
         //LOGGER.info("Creeper %f %f %f explode!".formatted(creeper.getX(), creeper.getY(), creeper.getZ()));
         String broadcastString = "Creeper[%d, %d, %d] explode!".formatted((int) creeper.getX(), (int) creeper.getY(), (int) creeper.getZ());
         if (!(creeper.getTarget() == null)) {
-            broadcastString += " Target is %s".formatted(creeper.getTarget().getName().asString());
+            broadcastString += " Target is %s".formatted(creeper.getTarget().getName().getString());
         }
         MessageUtil.broadcastPrefixMessage(broadcastString, false, true);
     }
 
-    public static Explosion.DestructionType onCreeperCreateExplosion(Explosion.DestructionType t) {
-        return CreeperHelper.isCreeperExplode() ? t : Explosion.DestructionType.NONE;
+    public static World.ExplosionSourceType onCreeperCreateExplosion(World.ExplosionSourceType t) {
+        return CreeperHelper.isCreeperExplode() ? t : World.ExplosionSourceType.NONE;
     }
 
 }

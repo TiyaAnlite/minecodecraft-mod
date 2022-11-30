@@ -6,14 +6,14 @@ import java.util.Objects;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.jetbrains.annotations.Nullable;
 
 public class Config {
     String confPath;
     ConfigBean configBean;
-    Logger LOGGER = LogManager.getLogger("MineCodeCraftConfig");
+    Logger LOGGER = LoggerFactory.getLogger("MineCodeCraftConfig");
     public static Gson gson = new Gson();
     public static Gson gson_pretty = new GsonBuilder().setPrettyPrinting().create();
 
@@ -62,7 +62,7 @@ public class Config {
             fileWriter.close();
         } catch (IOException e) {
             this.LOGGER.error("Write config file(%s) failed".formatted(this.confPath));
-            MineCodeCraftMod.getLogger().catching(e);
+            MineCodeCraftMod.getLogger().error("", e);
             return false;
         }
         return true;

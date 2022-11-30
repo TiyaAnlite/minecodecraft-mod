@@ -3,7 +3,7 @@ package cn.focot.codelab.minecodecraft.helpers;
 import cn.focot.codelab.minecodecraft.Config;
 import cn.focot.codelab.minecodecraft.MineCodeCraftMod;
 import net.minecraft.server.MinecraftServer;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
 
 public abstract class AbstractHelper {
     protected static final Logger LOGGER = MineCodeCraftMod.getLogger();

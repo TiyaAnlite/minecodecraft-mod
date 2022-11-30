@@ -14,7 +14,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -29,7 +28,7 @@ public class CommandRegister {
     private static final Config config = MineCodeCraftMod.getConfig();
     public static final SimpleCommandExceptionType SERVER_SAVE_FAILED_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c尝试存档时失败"));
     public static final SimpleCommandExceptionType HOME_NOT_SET_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cHome pos not set.§r"));
-    public static final SimpleCommandExceptionType INVALID_POSITION_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("commands.teleport.invalidPosition"));
+    public static final SimpleCommandExceptionType INVALID_POSITION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("commands.teleport.invalidPosition"));
     public static final SimpleCommandExceptionType UNSUPPORTED_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.of("§cUnsupported entity type§r"));
     public static final SimpleCommandExceptionType TELEPORT_IN_PROGRESS_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c传送进行中，请耐心等待上一个传送完成§r"));
     public static final SimpleCommandExceptionType TELEPORT_TO_VOID_EXCEPTION = new SimpleCommandExceptionType(Text.of("§c无法传送到虚空§r"));
@@ -129,7 +128,7 @@ public class CommandRegister {
 
     static int tpBack(ServerCommandSource source) throws CommandSyntaxException {
         ServerPlayerEntity player = getPlayer(source);
-        PlayerPos playerPos = StatusHelper.getPlayerPosHistory(player.getName().asString());
+        PlayerPos playerPos = StatusHelper.getPlayerPosHistory(player.getName().getString());
         if (playerPos == null) {
             throw INVALID_POSITION_EXCEPTION.create();
         }
