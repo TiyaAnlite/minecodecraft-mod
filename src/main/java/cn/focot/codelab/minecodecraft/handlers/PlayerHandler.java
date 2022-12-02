@@ -3,14 +3,12 @@ package cn.focot.codelab.minecodecraft.handlers;
 import cn.focot.codelab.minecodecraft.helpers.PlayerHelper;
 import cn.focot.codelab.minecodecraft.helpers.StatusHelper;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Util;
 
 public class PlayerHandler extends AbstractHandler {
 
@@ -18,7 +16,7 @@ public class PlayerHandler extends AbstractHandler {
         ServerPlayerEntity player = handler.player;
         LOGGER.info("New player join: %s[%s]".formatted(player.getName().getString(), player.getIp()));
         PlayerHelper.joinMOTD(player);
-        PlayerHelper.playerNotice(player);
+        PlayerHelper.sendPlayerNotice(player);
         player.sendMessage(MessageUtil.prefixMessage("Welcome! %s[%s]".formatted(player.getName().getString(), player.getIp())));
         if (!StatusHelper.hasPlayerPosHistory(player.getName().getString())) {
             StatusHelper.updatePlayerPosHistory(player);

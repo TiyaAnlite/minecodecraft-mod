@@ -44,7 +44,7 @@ public class PlayerHelper extends AbstractHelper {
                     //Single player
                     //player.playSound(new SoundEvent(waitingSound), SoundCategory.MASTER, 1.0F, 1.0F);
                     if (player.isDead()) {
-                        player.sendMessage(Text.of("§4检测到玩家死亡，传送计划被取消§r"), false);
+                        player.sendMessage(Text.of("§4玩家死亡，传送计划被取消§r"), false);
                         return;
                     }
                     playerEyePos = player.getEyePos();
@@ -62,7 +62,7 @@ public class PlayerHelper extends AbstractHelper {
                     player.wakeUp(true, true);
                 }
                 if (player.isDead()) {
-                    player.sendMessage(Text.of("§4检测到玩家死亡，传送计划被取消§r"), false);
+                    player.sendMessage(Text.of("§4玩家死亡，传送计划被取消§r"), false);
                     return;
                 }
                 player.teleport(world, targetPos.getX(), targetPos.getY(), targetPos.getZ(), f, g);
@@ -150,7 +150,7 @@ public class PlayerHelper extends AbstractHelper {
         player.sendMessage(Text.of(msg));
     }
 
-    public static void playerNotice(ServerPlayerEntity player) {
+    public static void sendPlayerNotice(ServerPlayerEntity player) {
         for (String notice : config.getConfigBean().notice) {
             player.sendMessage(MessageUtil.prefixMessage(notice));
         }
