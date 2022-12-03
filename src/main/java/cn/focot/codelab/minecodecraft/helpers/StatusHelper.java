@@ -1,5 +1,6 @@
 package cn.focot.codelab.minecodecraft.helpers;
 
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -11,7 +12,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StatusHelper extends AbstractHelper {
-    private static final ConcurrentHashMap<String, PlayerPos> playerPosHistory = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, PlayerData> playerData = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, PlayerWhereRequest> playerWhereRequest = new ConcurrentHashMap<>();
     private static int playerWhereRequestUpdateTimer = 0;
 
@@ -28,23 +29,46 @@ public class StatusHelper extends AbstractHelper {
         }
     }
 
-    public static void updatePlayerPosHistory(ServerPlayerEntity player) {
-        ServerWorld world = player.getWorld();
-        updatePlayerPosHistory(player.getName().getString(), player.getPos(), world);
+    public static String onlineTime(int sec) {
+        int hour = 0;
+        int minute = 0;
+        while (sec > 60) {
+            sec -= 60;
+            minute++;
+        }
+        while (minute > 60) {
+            minute -= 60;
+            hour++;
+        }
+        return "§e%d时 %d分§r".formatted(hour, minute);
     }
 
-    public static void updatePlayerPosHistory(String name, Vec3d pos, ServerWorld world) {
+    public static void updatePlayerPosHistory(ServerPlayerEntity player) {
+        ServerWorld world = player.getWorld();
+        updatePlayerPosHistory(player.getUuidAsString(), player.getName().getString(), player.getPos(), world);
+    }
+
+    public static void updatePlayerPosHistory(String uuid, String name, Vec3d pos, ServerWorld world) {
+        PlayerData data;
+        if (playerData.containsKey(uuid)) {
+            data = playerData.get(uuid);
+        } else {
+            data = new PlayerData();
+        }
         PlayerPos playerPos = new PlayerPos(pos, world);
-        playerPosHistory.put(name, playerPos);
+        data.setPosHistory(playerPos);
         LOGGER.info("Updated %s pos history: [%.2f, %.2f, %.2f]".formatted(name, pos.getX(), pos.getY(), pos.getZ()));
     }
 
-    public static PlayerPos getPlayerPosHistory(String name) {
-        return playerPosHistory.get(name);
+    public static PlayerPos getPlayerPosHistory(ServerPlayerEntity player) {
+        return playerData.get(player.getUuidAsString()).getPosHistory();
     }
 
-    public static boolean hasPlayerPosHistory(String name) {
-        return playerPosHistory.containsKey(name);
+    public static boolean hasPlayerPosHistory(ServerPlayerEntity player) {
+        if (!hasPlayerData(player)) {
+             return false;
+        }
+        return playerData.get(player.getUuidAsString()).hasPosHistory();
     }
 
     public static void addPlayerWhereRequest(ServerPlayerEntity targetPlayer, ServerPlayerEntity requestPlayer) {
@@ -86,6 +110,32 @@ public class StatusHelper extends AbstractHelper {
 
     public static void tickServerStatus() {
         tickPlayerWhereRequest();
+    }
+
+    public static void newPlayerData(ServerPlayerEntity player) {
+        LOGGER.info("New player data for %s".formatted(player.getName().getString()));
+        playerData.put(player.getUuidAsString(), new PlayerData());
+    }
+
+    public static PlayerData getPlayerData(ServerPlayerEntity player) {
+        return playerData.get(player.getUuidAsString());
+    }
+
+    public static void readPlayerData(ServerPlayerEntity player, NbtCompound nbt) {
+        playerData.put(player.getUuidAsString(), PlayerData.ofNbt(nbt));
+    }
+
+    public static NbtCompound writePlayerData(ServerPlayerEntity player, NbtCompound nbt) {
+        if (hasPlayerData(player)) {
+            return playerData.get(player.getUuidAsString()).writeNbt(nbt);
+        } else {
+            LOGGER.error("Cannot save player data: player data[%s](%s) not found".formatted(player.getName().getString(), player.getUuidAsString()));
+            return nbt;
+        }
+    }
+
+    public static boolean hasPlayerData(ServerPlayerEntity player) {
+        return playerData.containsKey(player.getUuidAsString());
     }
 }
 

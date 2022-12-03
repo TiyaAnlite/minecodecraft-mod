@@ -7,7 +7,9 @@
   "client": [],
   "server": [
     "ServerMixin",
+    "PlayerMixin",
     "CreeperMixin",
+    "BlockMixin",
     "MinecraftServerAccessor"
   ],
   "injectors": {

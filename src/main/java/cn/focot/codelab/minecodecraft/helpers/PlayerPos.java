@@ -1,9 +1,10 @@
 package cn.focot.codelab.minecodecraft.helpers;
 
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.Vec3d;
 
-public class PlayerPos {
+public class PlayerPos extends AbstractHelper {
     Vec3d pos;
     ServerWorld world;
 
@@ -18,5 +19,13 @@ public class PlayerPos {
 
     public ServerWorld getWorld() {
         return world;
+    }
+
+    public void readNbt(NbtCompound nbt) {
+
+    }
+
+    public void writeNbt(NbtCompound nbt) {
+
     }
 }

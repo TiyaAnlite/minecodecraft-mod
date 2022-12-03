@@ -6,12 +6,13 @@ Minecodecraft服务端专用MOD
 
 ## 功能
 
-- `/creeperExplosion`苦力怕防爆(与`mobGriefing`不冲突)
+- `/minecodecraft creeperExplosion`苦力怕防爆(与`mobGriefing`不冲突)
 - `/home` `/back`传送功能
 - `/here` `/where`位置共享功能
 - `/save`自定义存档
 - 自定义服务器登录欢迎信息，开服时间统计
 - 定时服务器轮播消息
+- 同原版数据一同存储扩展用户数据，支持用户在线时间，累计挖掘和历史上线时间统计
 
 ## 指令
 
@@ -20,8 +21,6 @@ Minecodecraft服务端专用MOD
 - **需要OP权限**
 
 单独打开/关闭苦力怕破坏方块能力，默认为关闭破坏`false`，无需再调整`mobGriefing`规则
-
-`/creeperExplosion [true|false]`
 
 `/minecodecraft creeperExplosion [true|false]`
 
@@ -65,6 +64,14 @@ Minecodecraft服务端专用MOD
 - 被邀请的玩家会收到消息，可以选择是否在一定时间内通过`/here`共享位置，超时双方会受到拒绝消息
 - OP无需对方玩家同意即可立即生效
 
+### 玩家数据
+
+- 需要OP权限
+
+可以查看其他在线玩家的用户数据，其格式与MOTD展示内容相同
+
+`/minecodecraft player [player] info`
+
 ### 自定义存档
 
 - **需要OP权限**
@@ -75,7 +82,7 @@ Minecodecraft服务端专用MOD
 
 ## 配置
 
-所有配置项在`/config/minecodecraft.json`
+所有配置项在`config/minecodecraft.json`
 
 `/minecodecraft config [save|reload]` 保存运行时配置至文件/从配置文件重载配置，**需要OP权限**
 

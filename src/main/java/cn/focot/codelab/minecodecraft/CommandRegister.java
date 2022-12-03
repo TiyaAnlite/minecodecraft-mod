@@ -1,5 +1,6 @@
 package cn.focot.codelab.minecodecraft;
 
+import cn.focot.codelab.minecodecraft.handlers.AbstractHandler;
 import cn.focot.codelab.minecodecraft.helpers.*;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
 import cn.focot.codelab.minecodecraft.utils.WorldUtil;
@@ -44,7 +45,7 @@ public class CommandRegister {
                 .executes((c) -> playerHere(c.getSource()));
         final LiteralArgumentBuilder<ServerCommandSource> atWhere = literal("where")
                 .then(argument("player", EntityArgumentType.player())
-                        .executes((c) -> playerWhere(c.getSource(), EntityArgumentType.getEntity(c, "player"))));
+                        .executes((c) -> playerWhere(c.getSource(), EntityArgumentType.getPlayer(c, "player"))));
         LiteralCommandNode<ServerCommandSource> homeCommand = dispatcher.register(tpToHome);
         LiteralCommandNode<ServerCommandSource> backCommand = dispatcher.register(tpToBack);
         LiteralCommandNode<ServerCommandSource> hereCommand = dispatcher.register(atHere);
@@ -62,6 +63,11 @@ public class CommandRegister {
                         .redirect(hereCommand))
                 .then(literal("where")
                         .redirect(whereCommand))
+                .then(literal("player")
+                        .requires(CommandRegister::needOp)
+                        .then(argument("player", EntityArgumentType.player())
+                                .then(literal("info")
+                                        .executes((c) -> playerInfo(c.getSource(), EntityArgumentType.getPlayer(c, "player"))))))
                 .then(literal("config")
                         .requires(CommandRegister::needOp)
                         .executes((c) -> showConfigString(c.getSource()))
@@ -140,7 +146,7 @@ public class CommandRegister {
 
     static private int tpBack(ServerCommandSource source) throws CommandSyntaxException {
         ServerPlayerEntity player = getPlayer(source);
-        PlayerPos playerPos = StatusHelper.getPlayerPosHistory(player.getName().getString());
+        PlayerPos playerPos = StatusHelper.getPlayerPosHistory(player);
         if (playerPos == null) {
             throw INVALID_POSITION_EXCEPTION.create();
         }
@@ -171,6 +177,16 @@ public class CommandRegister {
         } else {
             PlayerHelper.whereRequest(targetPlayer, sourcePlayer);
         }
+        return Command.SINGLE_SUCCESS;
+    }
+
+    static private int playerInfo(ServerCommandSource source, Entity entity)throws CommandSyntaxException  {
+        ServerPlayerEntity player = getPlayer(entity);
+        StringBuilder replay = new StringBuilder();
+        replay.append("\"§7=======§r PlayerInfo for §e%s§7 =======§r".formatted(player.getName().getString()));
+        replay.append("\n§7§oUUID: %s§r".formatted(player.getUuidAsString()));
+        replay.append(PlayerHelper.checkedPlayerData(player).postPlayerInfo());
+        MessageUtil.replyCommandMessage(source, Text.of(replay.toString()));
         return Command.SINGLE_SUCCESS;
     }
 

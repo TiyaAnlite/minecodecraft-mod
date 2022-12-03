@@ -21,6 +21,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class PlayerHelper extends AbstractHelper {
@@ -65,6 +66,8 @@ public class PlayerHelper extends AbstractHelper {
                     player.sendMessage(Text.of("§4玩家死亡，传送计划被取消§r"), false);
                     return;
                 }
+                // History
+                StatusHelper.updatePlayerPosHistory(player);
                 player.teleport(world, targetPos.getX(), targetPos.getY(), targetPos.getZ(), f, g);
                 if (!world.equals(playerWorld)) {
                     // Fix experience bar when change world
@@ -79,8 +82,6 @@ public class PlayerHelper extends AbstractHelper {
                 for (ServerPlayerEntity p : serverPlayers) {
                     p.networkHandler.sendPacket(packet);
                 }
-                // History
-                StatusHelper.updatePlayerPosHistory(playerName, playerPos, playerWorld);
             } catch (InterruptedException e) {
                 LOGGER.error("At tpPlayer", e);
             } finally {
@@ -141,18 +142,29 @@ public class PlayerHelper extends AbstractHelper {
     }
 
     public static void joinMOTD(ServerPlayerEntity player) {
-        String msg = "§7=======§r Welcome back to §e%s§7 =======§r".formatted(config.getConfigBean().serverName + " " + getServer().getVersion());
-        msg += "\n今天是§e%s§r开服的第§e%d§r天".formatted(config.getConfigBean().serverName, StatusHelper.lunchedTime());
+        StringBuilder msg = new StringBuilder();
+        msg.append("§7=======§r Welcome back to §e%s§7 =======§r".formatted(config.getConfigBean().serverName + " " + getServer().getVersion()));
+        msg.append("\n今天是§e%s§r开服的第§e%d§r天".formatted(config.getConfigBean().serverName, StatusHelper.lunchedTime()));
+        PlayerData playerData = StatusHelper.getPlayerData(player);
+        msg.append(playerData.postPlayerInfo());
         if (config.getConfigBean().copyRight) {
-            msg += "\n§7§oPowered by MineCodeCraft MOD %s © TiyaAnlite@Codelab§r".formatted(version);
+            msg.append("\n§7§oPowered by MineCodeCraft MOD %s © TiyaAnlite@Codelab§r".formatted(version));
         }
         //player.sendMessage(Text.of(msg), false);
-        player.sendMessage(Text.of(msg));
+        player.sendMessage(Text.of(msg.toString()));
     }
 
     public static void sendPlayerNotice(ServerPlayerEntity player) {
         for (String notice : config.getConfigBean().notice) {
             player.sendMessage(MessageUtil.prefixMessage(notice));
         }
+    }
+
+    public static PlayerData checkedPlayerData(ServerPlayerEntity player) {
+        if (!StatusHelper.hasPlayerData(player)) {
+            LOGGER.error("Player data not found: %s[%s]".formatted(player.getName().getString(), player.getUuidAsString()));
+            StatusHelper.newPlayerData(player);
+        }
+        return StatusHelper.getPlayerData(player);
     }
 }
