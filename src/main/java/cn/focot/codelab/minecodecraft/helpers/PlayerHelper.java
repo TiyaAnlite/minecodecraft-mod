@@ -21,7 +21,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class PlayerHelper extends AbstractHelper {
@@ -54,20 +53,20 @@ public class PlayerHelper extends AbstractHelper {
                     Thread.sleep(1000);
                     sec++;
                 }
-                ChunkPos chunkPos = new ChunkPos(new BlockPos(targetPos.getX(), targetPos.getY(), targetPos.getZ()));
-                world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
                 //Single player
                 //serverOverworld.playSound(targetPos.x, targetPos.y, targetPos.z, new SoundEvent(teleportSound), SoundCategory.PLAYERS, 1.0F, 1.0F, true);
-                player.stopRiding();
-                if (player.isSleeping()) {
-                    player.wakeUp(true, true);
-                }
                 if (player.isDead()) {
                     player.sendMessage(Text.of("§4玩家死亡，传送计划被取消§r"), false);
                     return;
                 }
+                player.stopRiding();
+                if (player.isSleeping()) {
+                    player.wakeUp(true, true);
+                }
                 // History
                 StatusHelper.updatePlayerPosHistory(player);
+                ChunkPos chunkPos = new ChunkPos(new BlockPos(targetPos.getX(), targetPos.getY(), targetPos.getZ()));
+                world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
                 player.teleport(world, targetPos.getX(), targetPos.getY(), targetPos.getZ(), f, g);
                 if (!world.equals(playerWorld)) {
                     // Fix experience bar when change world
@@ -80,7 +79,9 @@ public class PlayerHelper extends AbstractHelper {
                 List<ServerPlayerEntity> serverPlayers = world.getPlayers();
                 PlaySoundS2CPacket packet = new PlaySoundS2CPacket(teleportSound, SoundCategory.PLAYERS, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 1.0F, 1.0F, 1);
                 for (ServerPlayerEntity p : serverPlayers) {
-                    p.networkHandler.sendPacket(packet);
+                    if (world.equals(p.getWorld())) {
+                        p.networkHandler.sendPacket(packet);
+                    }
                 }
             } catch (InterruptedException e) {
                 LOGGER.error("At tpPlayer", e);
@@ -130,7 +131,7 @@ public class PlayerHelper extends AbstractHelper {
     public static void whereRequest(ServerPlayerEntity targetPlayer, ServerPlayerEntity requestPlayer) {
         targetPlayer.sendMessage(Text.of("§3%s§a请求你广播当前位置，同意请在§6%d秒§a内输入§6/here".formatted(requestPlayer.getName().getString(), config.getConfigBean().playerWhereRequestExpire)));
         StatusHelper.addPlayerWhereRequest(targetPlayer, requestPlayer);
-        targetPlayer.sendMessage(Text.of("位置共享请求已发送"));
+        requestPlayer.sendMessage(Text.of("位置共享请求已发送"));
     }
 
     public static boolean isTeleportPlayer(String name) {
