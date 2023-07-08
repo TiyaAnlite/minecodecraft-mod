@@ -2,7 +2,7 @@
 
 Minecodecraft服务端专用MOD
 
-当前分支`1.19`适配版本：**Minecraft 1.19.3**
+当前分支`1.19`适配版本：**Minecraft 1.19.2**
 
 ## 功能
 

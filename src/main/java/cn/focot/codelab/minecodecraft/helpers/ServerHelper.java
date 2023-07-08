@@ -40,7 +40,7 @@ public class ServerHelper extends AbstractHelper {
         int interval = config.getConfigBean().playerLatencyUpdateInterval;
         if (!(interval == 30) && ++latencyUpdateTimer > interval * 20) {
             PlayerManager manager = getServer().getPlayerManager();
-            manager.sendToAll(new PlayerListS2CPacket(EnumSet.of(PlayerListS2CPacket.Action.UPDATE_LATENCY), manager.getPlayerList()));
+            manager.sendToAll(new PlayerListS2CPacket(PlayerListS2CPacket.Action.UPDATE_LATENCY, manager.getPlayerList()));
             latencyUpdateTimer = 0;
             return true;
         }

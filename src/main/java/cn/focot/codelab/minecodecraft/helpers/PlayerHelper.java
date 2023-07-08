@@ -6,13 +6,13 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -37,8 +37,8 @@ public class PlayerHelper extends AbstractHelper {
             try {
                 player.sendMessage(Text.of("§e已定位至§r[x:%.2f, y:%.2f, z:%.2f]§e, 将在§4%d§e秒后传送".formatted(targetPos.getX(), targetPos.getY(), targetPos.getZ(), config.getConfigBean().tpPlayer.interval)), true);
                 int sec = 0;
-                RegistryEntry<SoundEvent> waitingSound = RegistryEntry.of(SoundEvent.of(new Identifier("minecraft", "entity.experience_orb.pickup")));
-                RegistryEntry<SoundEvent> teleportSound = RegistryEntry.of(SoundEvent.of(new Identifier("minecraft", "entity.enderman.teleport")));
+                // RegistryEntry<SoundEvent> waitingSound = RegistryEntry.of(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP);
+                // RegistryEntry<SoundEvent> teleportSound = RegistryEntry.of(SoundEvents.ENTITY_ENDERMAN_TELEPORT);
                 Vec3d playerEyePos;
                 while (sec < config.getConfigBean().tpPlayer.interval) {
                     //Single player
@@ -48,7 +48,7 @@ public class PlayerHelper extends AbstractHelper {
                         return;
                     }
                     playerEyePos = player.getEyePos();
-                    player.networkHandler.sendPacket(new PlaySoundS2CPacket(waitingSound, SoundCategory.MASTER, playerEyePos.getX(), playerEyePos.getY(), playerEyePos.getZ(), 1.0F, 1.0F, 1));
+                    player.networkHandler.sendPacket(new PlaySoundS2CPacket(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, playerEyePos.getX(), playerEyePos.getY(), playerEyePos.getZ(), 1.0F, 1.0F, 1));
                     //LOGGER.info("Waiting at: %d".formatted(sec));
                     Thread.sleep(1000);
                     sec++;
@@ -77,7 +77,7 @@ public class PlayerHelper extends AbstractHelper {
                 player.setHeadYaw(f);
                 LOGGER.info("Teleported %s to %.2f, %.2f, %.2f".formatted(playerName, targetPos.getX(), targetPos.getY(), targetPos.getZ()));
                 List<ServerPlayerEntity> serverPlayers = world.getPlayers();
-                PlaySoundS2CPacket packet = new PlaySoundS2CPacket(teleportSound, SoundCategory.PLAYERS, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 1.0F, 1.0F, 1);
+                PlaySoundS2CPacket packet = new PlaySoundS2CPacket(SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 1.0F, 1.0F, 1);
                 for (ServerPlayerEntity p : serverPlayers) {
                     if (world.equals(p.getWorld())) {
                         p.networkHandler.sendPacket(packet);
