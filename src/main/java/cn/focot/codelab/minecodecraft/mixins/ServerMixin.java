@@ -3,6 +3,7 @@ package cn.focot.codelab.minecodecraft.mixins;
 import cn.focot.codelab.minecodecraft.MineCodeCraftMod;
 import cn.focot.codelab.minecodecraft.handlers.ServerHandler;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.ServerTickManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
@@ -43,12 +44,20 @@ public class ServerMixin {
 
     @Inject(method = "endTickMetrics", at = @At("TAIL"))
     private void serverTickEnd(CallbackInfo c) {
-        ServerHandler.onServerTickEnd((MinecraftServer) (Object) this, accessor.getLastTimeReference());
+        ServerHandler.onServerTickEnd((MinecraftServer) (Object) this, accessor.getTickManager().getNanosPerTick(), accessor.getLastOverloadWarningNanos(), MinecraftServerAccessor.getOverloadThresholdNanos());
     }
 }
 
 @Mixin(MinecraftServer.class)
 interface MinecraftServerAccessor {
     @Accessor
-    long getLastTimeReference();
+    long getLastOverloadWarningNanos();
+
+    @Accessor
+    ServerTickManager getTickManager();
+
+    @Accessor("OVERLOAD_THRESHOLD_NANOS")
+    public static long getOverloadThresholdNanos() {
+        throw new AssertionError();
+    }
 }

@@ -5,6 +5,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -44,7 +45,7 @@ public class StatusHelper extends AbstractHelper {
     }
 
     public static void updatePlayerPosHistory(ServerPlayerEntity player) {
-        ServerWorld world = player.getWorld();
+        ServerWorld world = player.getServerWorld();
         updatePlayerPosHistory(player.getUuidAsString(), player.getName().getString(), player.getPos(), world);
     }
 

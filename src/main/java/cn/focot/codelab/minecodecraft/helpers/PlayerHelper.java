@@ -2,19 +2,18 @@ package cn.focot.codelab.minecodecraft.helpers;
 
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
 import cn.focot.codelab.minecodecraft.utils.WorldUtil;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
@@ -30,7 +29,7 @@ public class PlayerHelper extends AbstractHelper {
         float f = MathHelper.wrapDegrees(player.getYaw());
         float g = MathHelper.wrapDegrees(player.getPitch());
         Vec3d playerPos = player.getPos();
-        ServerWorld playerWorld = player.getWorld();
+        ServerWorld playerWorld = player.getServerWorld();
         String playerName = player.getName().getString();
         Thread th = new Thread(() -> {
             teleportPlayer.add(playerName);
@@ -48,7 +47,7 @@ public class PlayerHelper extends AbstractHelper {
                         return;
                     }
                     playerEyePos = player.getEyePos();
-                    player.networkHandler.sendPacket(new PlaySoundS2CPacket(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, SoundCategory.MASTER, playerEyePos.getX(), playerEyePos.getY(), playerEyePos.getZ(), 1.0F, 1.0F, 1));
+                    player.networkHandler.sendPacket(new PlaySoundS2CPacket(RegistryEntry.of(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP), SoundCategory.MASTER, playerEyePos.getX(), playerEyePos.getY(), playerEyePos.getZ(), 1.0F, 1.0F, 1));
                     //LOGGER.info("Waiting at: %d".formatted(sec));
                     Thread.sleep(1000);
                     sec++;
@@ -65,7 +64,7 @@ public class PlayerHelper extends AbstractHelper {
                 }
                 // History
                 StatusHelper.updatePlayerPosHistory(player);
-                ChunkPos chunkPos = new ChunkPos(new BlockPos(targetPos.getX(), targetPos.getY(), targetPos.getZ()));
+                ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(targetPos.getX(), targetPos.getY(), targetPos.getZ()));
                 world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
                 player.teleport(world, targetPos.getX(), targetPos.getY(), targetPos.getZ(), f, g);
                 if (!world.equals(playerWorld)) {
@@ -77,7 +76,7 @@ public class PlayerHelper extends AbstractHelper {
                 player.setHeadYaw(f);
                 LOGGER.info("Teleported %s to %.2f, %.2f, %.2f".formatted(playerName, targetPos.getX(), targetPos.getY(), targetPos.getZ()));
                 List<ServerPlayerEntity> serverPlayers = world.getPlayers();
-                PlaySoundS2CPacket packet = new PlaySoundS2CPacket(SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 1.0F, 1.0F, 1);
+                PlaySoundS2CPacket packet = new PlaySoundS2CPacket(RegistryEntry.of(SoundEvents.ENTITY_ENDERMAN_TELEPORT), SoundCategory.PLAYERS, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 1.0F, 1.0F, 1);
                 for (ServerPlayerEntity p : serverPlayers) {
                     if (world.equals(p.getWorld())) {
                         p.networkHandler.sendPacket(packet);
@@ -104,10 +103,10 @@ public class PlayerHelper extends AbstractHelper {
                 requestPlayer.sendMessage(Text.of("§3%s§r已接受你的位置共享请求".formatted(request.getTargetName())));
             }
         }
-        player.addStatusEffect(new StatusEffectInstance(StatusEffect.byRawId(24), config.getConfigBean().playerHereGlowingTime * 20));
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, config.getConfigBean().playerHereGlowingTime * 20));
         player.sendMessage(Text.of("§6你将会被高亮§5%d§6秒".formatted(config.getConfigBean().playerHereGlowingTime)), true);
         String playerName = player.getName().getString();
-        ServerWorld world = player.getWorld();
+        ServerWorld world = player.getServerWorld();
         RegistryKey<World> worldKey = world.getRegistryKey();
         String worldName;
         if (worldKey.equals(World.OVERWORLD)) {
@@ -119,7 +118,7 @@ public class PlayerHelper extends AbstractHelper {
         } else {
             worldName = "未知世界";
         }
-        BlockPos playerPos = new BlockPos(player.getPos());
+        BlockPos playerPos = BlockPos.ofFloored(player.getPos());
         MessageUtil.broadcastPrefixMessage("§3%s§a在§6%s§r[x:%d, y:%d, z:%d]§a向大家打招呼".formatted(playerName, worldName, playerPos.getX(), playerPos.getY(), playerPos.getZ()), false, false);
         for (ServerPlayerEntity tellPlayer : getServer().getPlayerManager().getPlayerList()) {
             if (!(tellPlayer.equals(player))) {

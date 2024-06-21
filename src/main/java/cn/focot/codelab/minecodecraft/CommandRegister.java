@@ -133,7 +133,7 @@ public class CommandRegister {
         }
         Vec3d targetPos = new Vec3d(homePos.x, homePos.y, homePos.z);
         ServerWorld world = source.getServer().getOverworld();
-        if (!World.isValid(new BlockPos(targetPos))) {
+        if (!World.isValid(BlockPos.ofFloored(targetPos))) {
             throw INVALID_POSITION_EXCEPTION.create();
         }
         ServerPlayerEntity player = getPlayer(source);
@@ -150,7 +150,7 @@ public class CommandRegister {
         if (playerPos == null) {
             throw INVALID_POSITION_EXCEPTION.create();
         }
-        BlockPos intPos = new BlockPos(playerPos.getPos());
+        BlockPos intPos = BlockPos.ofFloored(playerPos.getPos());
         if (!(World.isValid(intPos))) {
             throw INVALID_POSITION_EXCEPTION.create();
         }

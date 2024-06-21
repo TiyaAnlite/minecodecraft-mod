@@ -1,5 +1,6 @@
 package cn.focot.codelab.minecodecraft.utils;
 
+import com.google.common.base.Suppliers;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -17,7 +18,7 @@ public class MessageUtil extends AbstractUtil {
         try {
             Objects.requireNonNull(source.getPlayer()).sendMessage(text, false);
         } catch (NullPointerException e) {
-            source.sendFeedback(text, false);
+            source.sendFeedback(Suppliers.ofInstance(text), false);
         }
     }
 
