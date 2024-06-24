@@ -20,7 +20,9 @@ public abstract class EventMsg {
     public void publish() {
         if (MineCodeCraftMod.hasNatsConnection()) {
             MineCodeCraftMod.getNatsConnection().publish(
-                    new StringJoiner(MineCodeCraftMod.getConfig().getConfigBean().nats.prefix, ".", this.msgSubject).toString(),
+                    new StringJoiner(".").
+                            add(MineCodeCraftMod.getConfig().getConfigBean().nats.prefix).
+                            add(this.msgSubject).toString(),
                     this.toBytes());
         }
     };

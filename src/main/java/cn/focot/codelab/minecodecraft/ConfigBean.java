@@ -42,7 +42,7 @@ public class ConfigBean {
     }
 
     public class Nats {
-        public String server;
+        public String server = "";
         public String prefix = "minecodecraft";
     }
 }
