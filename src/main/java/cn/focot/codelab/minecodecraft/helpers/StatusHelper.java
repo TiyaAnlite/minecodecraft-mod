@@ -1,11 +1,11 @@
 package cn.focot.codelab.minecodecraft.helpers;
 
+import cn.focot.codelab.minecodecraft.event.PlayerAction;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -128,7 +128,9 @@ public class StatusHelper extends AbstractHelper {
 
     public static NbtCompound writePlayerData(ServerPlayerEntity player, NbtCompound nbt) {
         if (hasPlayerData(player)) {
-            return playerData.get(player.getUuidAsString()).writeNbt(nbt);
+            PlayerData data = playerData.get(player.getUuidAsString());
+            PlayerAction.of(player, data, "saving");
+            return data.writeNbt(nbt);
         } else {
             LOGGER.error("Cannot save player data: player data[%s](%s) not found".formatted(player.getName().getString(), player.getUuidAsString()));
             return nbt;

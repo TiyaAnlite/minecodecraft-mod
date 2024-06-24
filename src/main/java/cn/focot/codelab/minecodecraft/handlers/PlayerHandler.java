@@ -1,5 +1,6 @@
 package cn.focot.codelab.minecodecraft.handlers;
 
+import cn.focot.codelab.minecodecraft.event.PlayerAction;
 import cn.focot.codelab.minecodecraft.helpers.PlayerData;
 import cn.focot.codelab.minecodecraft.helpers.PlayerHelper;
 import cn.focot.codelab.minecodecraft.helpers.StatusHelper;
@@ -22,6 +23,7 @@ public class PlayerHandler extends AbstractHandler {
         playerData.login();
         PlayerHelper.joinMOTD(player);
         PlayerHelper.sendPlayerNotice(player);
+        PlayerAction.of(player, playerData, "join").publish();
         player.sendMessage(MessageUtil.prefixMessage("Welcome! %s[%s]".formatted(player.getName().getString(), player.getIp())));
         if (!StatusHelper.hasPlayerPosHistory(player)) {
             StatusHelper.updatePlayerPosHistory(player);
@@ -32,6 +34,7 @@ public class PlayerHandler extends AbstractHandler {
         ServerPlayerEntity player = handler.player;
         PlayerData playerData = PlayerHelper.checkedPlayerData(player);
         playerData.logout();
+        PlayerAction.of(player, playerData, "disconnect").publish();
         LOGGER.info("Player disconnect: %s[%s]".formatted(player.getName().getString(), player.getIp()));
     }
 

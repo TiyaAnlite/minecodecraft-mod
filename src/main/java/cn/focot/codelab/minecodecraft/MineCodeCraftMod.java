@@ -1,15 +1,23 @@
 package cn.focot.codelab.minecodecraft;
 
 import cn.focot.codelab.minecodecraft.handlers.PlayerHandler;
+import cn.focot.codelab.minecodecraft.handlers.ServerHandler;
+import io.nats.client.Connection;
+import io.nats.client.Nats;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.metadata.ModMetadata;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Objects;
 
 public class MineCodeCraftMod implements ModInitializer {
     private static final String MOD_ID = "minecodecraft";
@@ -18,6 +26,9 @@ public class MineCodeCraftMod implements ModInitializer {
     private static MinecraftServer minecraftServer;
     private static String version;
     private static String description;
+
+    private static Connection nc = null;
+    private static String lastNcServer = "";
 
     public static Logger getLogger() {
         return LOGGER;
@@ -49,6 +60,31 @@ public class MineCodeCraftMod implements ModInitializer {
         ServerPlayConnectionEvents.JOIN.register(PlayerHandler::onPlayerJoin);
         ServerPlayConnectionEvents.DISCONNECT.register(PlayerHandler::onPlayerDisconnect);
         ServerLivingEntityEvents.ALLOW_DEATH.register(PlayerHandler::onPlayerDeath);
+        ServerLifecycleEvents.SERVER_STARTING.register(ServerHandler::onServerLoaded);
+        ServerLifecycleEvents.SERVER_STOPPING.register(ServerHandler::onServerStopping);
+        ServerLifecycleEvents.SERVER_STOPPED.register(ServerHandler::onServerStopped);
+        ServerTickEvents.START_WORLD_TICK.register(ServerHandler::onWorldTick);
+        MineCodeCraftMod.loadNatsConnection();
+    }
+
+    public static void loadNatsConnection() {
+        if (config.getConfigBean().nats.server != null && !Objects.equals(config.getConfigBean().nats.server, "") && !Objects.equals(lastNcServer, config.getConfigBean().nats.server)) {
+            String natsServer = config.getConfigBean().nats.server;
+            if (nc != null) {
+                try {
+                    nc.close();
+                    nc = null;
+                } catch (InterruptedException ignored) {
+                }
+            }
+            LOGGER.info("Connect to NATS: {}", natsServer);
+            try {
+                nc = Nats.connect(natsServer);
+                lastNcServer = natsServer;
+            } catch (IOException | InterruptedException e) {
+                LOGGER.error("Failed to connect to nats server", e);
+            }
+        }
     }
 
     public static String getModId() {
@@ -61,5 +97,13 @@ public class MineCodeCraftMod implements ModInitializer {
 
     public static String getDescription() {
         return description;
+    }
+
+    public static boolean hasNatsConnection() {
+        return nc != null;
+    }
+
+    public static Connection getNatsConnection() {
+        return nc;
     }
 }

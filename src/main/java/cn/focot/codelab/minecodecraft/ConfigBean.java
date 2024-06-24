@@ -1,5 +1,7 @@
 package cn.focot.codelab.minecodecraft;
 
+import cn.focot.codelab.minecodecraft.event.ServerAction;
+
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
@@ -10,6 +12,7 @@ public class ConfigBean {
     public TpPlayer tpPlayer = new TpPlayer();
     public String serverName = "MineCodeCraft";
     public String lunchTime = new SimpleDateFormat("yyyy-MM-dd").format(new Date().getTime());
+    public Nats nats = new Nats();
     public Tips tips = new Tips();
     public List<String> notice = new LinkedList<>();
     public int worldAutoSaveInterval = 0;
@@ -36,5 +39,10 @@ public class ConfigBean {
     public class Tips {
         public int interval = 20 * 60;
         public List<String> tips = new LinkedList<>();
+    }
+
+    public class Nats {
+        public String server;
+        public String prefix = "minecodecraft";
     }
 }

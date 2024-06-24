@@ -1,4 +1,7 @@
+import net.fabricmc.loom.task.RemapJarTask
+
 plugins {
+	id 'com.github.johnrengelman.shadow' version '7.1.2'
 	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 }
@@ -39,6 +42,8 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+	implementation "io.nats:jnats:${project.nats_version}"
+
 }
 
 processResources {
@@ -69,6 +74,21 @@ jar {
 	}
 }
 
+shadowJar {
+	archiveClassifier = 'shaded-dev'
+
+	dependencies {
+		include dependency("io.nats:jnats:${project.nats_version}")
+	}
+}
+
+tasks.register('remapShadowJar', RemapJarTask) {
+	dependsOn shadowJar
+	input = shadowJar.archiveFile
+	archiveFileName = shadowJar.archiveFileName.get().replaceAll('-shaded-dev\\.jar\$', '.jar')
+	addNestedDependencies = true
+}
+
 // configure the maven publication
 publishing {
 	publications {
@@ -86,3 +106,5 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+
+assemble.dependsOn(remapShadowJar)

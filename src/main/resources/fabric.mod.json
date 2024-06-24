@@ -31,8 +31,5 @@
     "fabric-api": "*",
     "minecraft": "~1.21",
     "java": ">=21"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }

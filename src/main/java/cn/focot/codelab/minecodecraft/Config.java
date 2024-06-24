@@ -14,8 +14,8 @@ public class Config {
     String confPath;
     ConfigBean configBean;
     Logger LOGGER = LoggerFactory.getLogger("MineCodeCraftConfig");
-    public static Gson gson = new Gson();
-    public static Gson gson_pretty = new GsonBuilder().setPrettyPrinting().create();
+    public static final Gson gson = new Gson();
+    public static final Gson gson_pretty = new GsonBuilder().setPrettyPrinting().create();
 
     Config(@Nullable String path) {
         this.confPath = "config/" + Objects.requireNonNullElse(path, "minecodecraft.json");

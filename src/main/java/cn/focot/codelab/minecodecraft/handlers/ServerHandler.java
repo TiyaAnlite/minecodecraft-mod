@@ -1,13 +1,18 @@
 package cn.focot.codelab.minecodecraft.handlers;
 
 import cn.focot.codelab.minecodecraft.MineCodeCraftMod;
+import cn.focot.codelab.minecodecraft.event.ServerAction;
 import cn.focot.codelab.minecodecraft.helpers.ServerHelper;
 import cn.focot.codelab.minecodecraft.helpers.StatusHelper;
 import cn.focot.codelab.minecodecraft.helpers.TipsHelper;
 import cn.focot.codelab.minecodecraft.utils.MessageUtil;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.TimeHelper;
 import net.minecraft.util.Util;
+
+import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 
 public class ServerHandler extends AbstractHandler {
 
@@ -16,6 +21,20 @@ public class ServerHandler extends AbstractHandler {
         LOGGER.info("Lunch from %s, %d days lunched".formatted(ServerHelper.getLunchTime(), StatusHelper.lunchedTime()));
         MineCodeCraftMod.setMinecraftServer(server);
         TipsHelper.lunch();
+        ServerAction.of("lunch").publish();
+    }
+
+    public static void onServerStopping(MinecraftServer server) {
+        ServerAction.of("stop").publish();
+    }
+
+    public static void onServerStopped(MinecraftServer server) {
+        if (MineCodeCraftMod.hasNatsConnection()) {
+            try {
+                MineCodeCraftMod.getNatsConnection().flush(Duration.ZERO);
+            } catch (TimeoutException | InterruptedException ignored) {
+            }
+        }
     }
 
     public static void onServerTickEnd(MinecraftServer server, long nanosPerTick, long lastOverloadWarningNanos, long OverloadThresholdNanos) {
@@ -27,7 +46,7 @@ public class ServerHandler extends AbstractHandler {
         }
     }
 
-    public static void onWorldTick(MinecraftServer server) {
+    public static void onWorldTick(ServerWorld world) {
         ServerHelper.tickServer();
         StatusHelper.tickServerStatus();
     }

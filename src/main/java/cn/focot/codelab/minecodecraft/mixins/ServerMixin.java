@@ -16,28 +16,23 @@ import java.util.function.BooleanSupplier;
 public class ServerMixin {
     private static MinecraftServerAccessor accessor;
 
-    //	@Inject(at = @At("HEAD"), method = "init()V")
-//	private void init(CallbackInfo info) {
-//		System.out.println("This line is printed by an example mod mixin!");
-//	}
-//
-    @Inject(
-            method = "tick",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/server/MinecraftServer;tickWorlds(Ljava/util/function/BooleanSupplier;)V",
-                    shift = At.Shift.BEFORE,
-                    ordinal = 0
-            )
-    )
-    private void onWorldTick(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
-        ServerHandler.onWorldTick((MinecraftServer) (Object) this);
-    }
+//    @Inject(
+//            method = "tick",
+//            at = @At(
+//                    value = "INVOKE",
+//                    target = "Lnet/minecraft/server/MinecraftServer;tickWorlds(Ljava/util/function/BooleanSupplier;)V",
+//                    shift = At.Shift.BEFORE,
+//                    ordinal = 0
+//            )
+//    )
+//    private void onWorldTick(BooleanSupplier booleanSupplier_1, CallbackInfo ci) {
+//        ServerHandler.onWorldTick((MinecraftServer) (Object) this);
+//    }
 
     @Inject(method = "loadWorld", at = @At("HEAD"))
     private void serverLoaded(CallbackInfo c) {
-        ServerHandler.onServerLoaded((MinecraftServer) (Object) this);
-        //Get accessor
+        // ServerHandler.onServerLoaded((MinecraftServer) (Object) this);
+        // Get accessor
         accessor = (MinecraftServerAccessor) MineCodeCraftMod.getMinecraftServer();
     }
 
