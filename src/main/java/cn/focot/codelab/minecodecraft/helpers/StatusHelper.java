@@ -129,7 +129,7 @@ public class StatusHelper extends AbstractHelper {
     public static NbtCompound writePlayerData(ServerPlayerEntity player, NbtCompound nbt) {
         if (hasPlayerData(player)) {
             PlayerData data = playerData.get(player.getUuidAsString());
-            PlayerAction.of(player, data, "saving");
+            PlayerAction.of(player, data, "saving").publish();
             return data.writeNbt(nbt);
         } else {
             LOGGER.error("Cannot save player data: player data[%s](%s) not found".formatted(player.getName().getString(), player.getUuidAsString()));
