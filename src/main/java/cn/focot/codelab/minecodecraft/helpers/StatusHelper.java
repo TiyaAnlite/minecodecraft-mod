@@ -45,7 +45,7 @@ public class StatusHelper extends AbstractHelper {
     }
 
     public static void updatePlayerPosHistory(ServerPlayerEntity player) {
-        ServerWorld world = player.getServerWorld();
+        ServerWorld world = player.getWorld();
         updatePlayerPosHistory(player.getUuidAsString(), player.getName().getString(), player.getPos(), world);
     }
 

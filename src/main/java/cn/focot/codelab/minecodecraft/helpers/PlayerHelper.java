@@ -29,7 +29,7 @@ public class PlayerHelper extends AbstractHelper {
         float f = MathHelper.wrapDegrees(player.getYaw());
         float g = MathHelper.wrapDegrees(player.getPitch());
         Vec3d playerPos = player.getPos();
-        ServerWorld playerWorld = player.getServerWorld();
+        ServerWorld playerWorld = player.getWorld();
         String playerName = player.getName().getString();
         Thread th = new Thread(() -> {
             teleportPlayer.add(playerName);
@@ -106,7 +106,7 @@ public class PlayerHelper extends AbstractHelper {
         player.addStatusEffect(new StatusEffectInstance(StatusEffects.GLOWING, config.getConfigBean().playerHereGlowingTime * 20));
         player.sendMessage(Text.of("§6你将会被高亮§5%d§6秒".formatted(config.getConfigBean().playerHereGlowingTime)), true);
         String playerName = player.getName().getString();
-        ServerWorld world = player.getServerWorld();
+        ServerWorld world = player.getWorld();
         RegistryKey<World> worldKey = world.getRegistryKey();
         String worldName;
         if (worldKey.equals(World.OVERWORLD)) {

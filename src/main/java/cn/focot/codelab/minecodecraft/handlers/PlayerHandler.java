@@ -14,6 +14,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.Optional;
+
 public class PlayerHandler extends AbstractHandler {
 
     public static void onPlayerJoin(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
@@ -48,8 +50,9 @@ public class PlayerHandler extends AbstractHandler {
 
     public static void onPlayerReadNbt(ServerPlayerEntity player, NbtCompound nbt) {
         LOGGER.info("Reading player data: %s".formatted(player.getName().getString()));
-        if (nbt.contains("minecodecraft", NbtElement.COMPOUND_TYPE)) {
-            StatusHelper.readPlayerData(player, nbt.getCompound("minecodecraft"));
+        Optional<NbtCompound> n = nbt.getCompound("minecodecraft");
+        if (n.isPresent()) {
+            StatusHelper.readPlayerData(player, n.get());
         } else {
             StatusHelper.newPlayerData(player);
         }
