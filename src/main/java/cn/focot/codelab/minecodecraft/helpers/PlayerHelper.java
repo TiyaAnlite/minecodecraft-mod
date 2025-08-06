@@ -6,6 +6,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.network.packet.s2c.play.ExperienceBarUpdateS2CPacket;
 import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -59,14 +60,14 @@ public class PlayerHelper extends AbstractHelper {
                     return;
                 }
                 player.stopRiding();
-                if (player.isSleeping()) {
-                    player.wakeUp(true, true);
-                }
+                // if (player.isSleeping()) {
+                //     player.wakeUp(true, true);
+                // }
                 // History
                 StatusHelper.updatePlayerPosHistory(player);
-                ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(targetPos.getX(), targetPos.getY(), targetPos.getZ()));
-                world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
-                player.teleport(world, targetPos.getX(), targetPos.getY(), targetPos.getZ(), f, g);
+                // ChunkPos chunkPos = new ChunkPos(BlockPos.ofFloored(targetPos.getX(), targetPos.getY(), targetPos.getZ()));
+                // world.getChunkManager().addTicket(ChunkTicketType.POST_TELEPORT, chunkPos, 1, player.getId());
+                player.teleport(world, targetPos.getX(), targetPos.getY(), targetPos.getZ(), EnumSet.noneOf(PositionFlag.class), f, g, true);
                 if (!world.equals(playerWorld)) {
                     // Fix experience bar when change world
                     LOGGER.info("Sync player experience bar");
@@ -74,6 +75,10 @@ public class PlayerHelper extends AbstractHelper {
                 }
                 //player.refreshPositionAfterTeleport(targetVec3d);
                 player.setHeadYaw(f);
+                if (player.isGliding()) {
+                    player.setVelocity(player.getVelocity().multiply(1.0, 0.0, 1.0));
+                    player.setOnGround(true);
+                }
                 LOGGER.info("Teleported %s to %.2f, %.2f, %.2f".formatted(playerName, targetPos.getX(), targetPos.getY(), targetPos.getZ()));
                 List<ServerPlayerEntity> serverPlayers = world.getPlayers();
                 PlaySoundS2CPacket packet = new PlaySoundS2CPacket(RegistryEntry.of(SoundEvents.ENTITY_ENDERMAN_TELEPORT), SoundCategory.PLAYERS, targetPos.getX(), targetPos.getY(), targetPos.getZ(), 1.0F, 1.0F, 1);

@@ -1,10 +1,10 @@
 package cn.focot.codelab.minecodecraft.helpers;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 
 import java.text.SimpleDateFormat;
 import java.util.Objects;
+import java.util.Optional;
 
 public class PlayerData extends AbstractHelper{
     protected int onlineTime;
@@ -69,20 +69,23 @@ public class PlayerData extends AbstractHelper{
         int onlineTime = 0;
         long lastOnlineTime = 0;
         int blockBreak = 0;
-        if (nbt.contains("OnlineTime", NbtElement.INT_TYPE)) {
-            onlineTime = nbt.getInt("OnlineTime");
+        Optional<Integer> onlineNbt = nbt.getInt("OnlineTime");
+        if (onlineNbt.isPresent()) {
+            onlineTime = onlineNbt.get();
         } else {
-            LOGGER.warn("Player data not found:OnlineTime");
+            LOGGER.info("Player data not found:OnlineTime");
         }
-        if (nbt.contains("LastOnlineTime", NbtElement.LONG_TYPE)) {
-            lastOnlineTime = nbt.getLong("LastOnlineTime");
+        Optional<Long> lastOnlineTimeNbt =  nbt.getLong("LastOnlineTime");
+        if (lastOnlineTimeNbt.isPresent()) {
+            lastOnlineTime = lastOnlineTimeNbt.get();
         } else {
-            LOGGER.warn("Player data not found:LastOnlineTime");
+            LOGGER.info("Player data not found:LastOnlineTime");
         }
-        if (nbt.contains("BlockBreak", NbtElement.INT_TYPE)) {
-            blockBreak = nbt.getInt("BlockBreak");
+        Optional<Integer> blockBreakNbt = nbt.getInt("BlockBreak");
+        if (blockBreakNbt.isPresent()) {
+            blockBreak = blockBreakNbt.get();
         } else {
-            LOGGER.warn("Player data not found:BlockBreak");
+            LOGGER.info("Player data not found:BlockBreak");
         }
         return new PlayerData(onlineTime, lastOnlineTime, blockBreak);
     }

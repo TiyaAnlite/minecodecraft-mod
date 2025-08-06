@@ -10,27 +10,27 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayerEntity.class)
 public class PlayerMixin {
-    @Inject(
-            method = "readCustomDataFromNbt",
-            at = @At(
-                    value = "INVOKE",
-                    shift = At.Shift.AFTER,
-                    ordinal = 0
-            )
-    )
-    private void onPlayerReadNbt(NbtCompound nbt, CallbackInfo ci) {
-        PlayerHandler.onPlayerReadNbt((ServerPlayerEntity)(Object)this, nbt);
-    }
-
-    @Inject(
-            method = "writeCustomDataToNbt",
-            at = @At(
-                    value = "INVOKE",
-                    shift = At.Shift.AFTER,
-                    ordinal = 0
-            )
-    )
-    private void onPlayerWriteNbt(NbtCompound nbt, CallbackInfo ci) {
-        PlayerHandler.onPlayerWriteNbt((ServerPlayerEntity)(Object)this, nbt);
-    }
+//    @Inject(
+//            method = "readCustomDataFromNbt",
+//            at = @At(
+//                    value = "INVOKE",
+//                    shift = At.Shift.AFTER,
+//                    ordinal = 0
+//            )
+//    )
+//    private void onPlayerReadNbt(NbtCompound nbt, CallbackInfo ci) {
+//        PlayerHandler.onPlayerReadNbt((ServerPlayerEntity)(Object)this, nbt);
+//    }
+//
+//    @Inject(
+//            method = "writeCustomDataToNbt",
+//            at = @At(
+//                    value = "INVOKE",
+//                    shift = At.Shift.AFTER,
+//                    ordinal = 0
+//            )
+//    )
+//    private void onPlayerWriteNbt(NbtCompound nbt, CallbackInfo ci) {
+//        PlayerHandler.onPlayerWriteNbt((ServerPlayerEntity)(Object)this, nbt);
+//    }
 }
