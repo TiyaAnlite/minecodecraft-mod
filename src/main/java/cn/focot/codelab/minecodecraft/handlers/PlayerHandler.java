@@ -8,11 +8,11 @@ import cn.focot.codelab.minecodecraft.utils.MessageUtil;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 
 import java.util.Optional;
 
@@ -48,18 +48,18 @@ public class PlayerHandler extends AbstractHandler {
         return true;
     }
 
-    public static void onPlayerReadNbt(ServerPlayerEntity player, NbtCompound nbt) {
+    public static void onPlayerReadNbt(ServerPlayerEntity player, ReadView view) {
         LOGGER.info("Reading player data: %s".formatted(player.getName().getString()));
-        Optional<NbtCompound> n = nbt.getCompound("minecodecraft");
-        if (n.isPresent()) {
-            StatusHelper.readPlayerData(player, n.get());
+        Optional<ReadView> mccView = view.getOptionalReadView("minecodecraft");
+        if (mccView.isPresent()) {
+            StatusHelper.readPlayerData(player, mccView.get());
         } else {
             StatusHelper.newPlayerData(player);
         }
     }
 
-    public static void onPlayerWriteNbt(ServerPlayerEntity player, NbtCompound nbt) {
+    public static void onPlayerWriteNbt(ServerPlayerEntity player, WriteView view) {
         LOGGER.info("Saving player data: %s".formatted(player.getName().getString()));
-        nbt.put("minecodecraft", StatusHelper.writePlayerData(player, new NbtCompound()));
+        StatusHelper.writePlayerData(player, view.get("minecodecraft"));
     }
 }

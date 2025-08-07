@@ -1,10 +1,12 @@
 package cn.focot.codelab.minecodecraft.helpers;
 
 import cn.focot.codelab.minecodecraft.event.PlayerAction;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.text.ParseException;
@@ -56,7 +58,7 @@ public class StatusHelper extends AbstractHelper {
         } else {
             data = new PlayerData();
         }
-        PlayerPos playerPos = new PlayerPos(pos, world);
+        PlayerPos playerPos = new PlayerPos(BlockPos.ofFloored(pos), world);
         data.setPosHistory(playerPos);
         LOGGER.info("Updated %s pos history: [%.2f, %.2f, %.2f]".formatted(name, pos.getX(), pos.getY(), pos.getZ()));
     }
@@ -122,18 +124,17 @@ public class StatusHelper extends AbstractHelper {
         return playerData.get(player.getUuidAsString());
     }
 
-    public static void readPlayerData(ServerPlayerEntity player, NbtCompound nbt) {
-        playerData.put(player.getUuidAsString(), PlayerData.ofNbt(nbt));
+    public static void readPlayerData(ServerPlayerEntity player, ReadView view) {
+        playerData.put(player.getUuidAsString(), PlayerData.ofView(view));
     }
 
-    public static NbtCompound writePlayerData(ServerPlayerEntity player, NbtCompound nbt) {
+    public static void writePlayerData(ServerPlayerEntity player, WriteView view) {
         if (hasPlayerData(player)) {
             PlayerData data = playerData.get(player.getUuidAsString());
             PlayerAction.of(player, data, "saving").publish();
-            return data.writeNbt(nbt);
+            data.writeView(view);
         } else {
             LOGGER.error("Cannot save player data: player data[%s](%s) not found".formatted(player.getName().getString(), player.getUuidAsString()));
-            return nbt;
         }
     }
 

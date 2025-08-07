@@ -1,6 +1,10 @@
 package cn.focot.codelab.minecodecraft.helpers;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
+import net.minecraft.util.math.GlobalPos;
 
 import java.text.SimpleDateFormat;
 import java.util.Objects;
@@ -23,6 +27,13 @@ public class PlayerData extends AbstractHelper{
         this.onlineTime = online;
         this.lastOnlineTime = lastOnline;
         this.blockBreak = blockBreak;
+    }
+
+    protected PlayerData(int online, long lastOnline, int blockBreak, PlayerPos posHistory) {
+        this.onlineTime = online;
+        this.lastOnlineTime = lastOnline;
+        this.blockBreak = blockBreak;
+        this.posHistory = posHistory;
     }
 
     public void login() {
@@ -65,6 +76,41 @@ public class PlayerData extends AbstractHelper{
         return Objects.isNull(this.posHistory);
     }
 
+    public static PlayerData ofView(ReadView view) {
+        int onlineTime = 0;
+        long lastOnlineTime = 0;
+        int blockBreak = 0;
+        Optional<Integer> onlineView = view.getOptionalInt("OnlineTime");
+        if (onlineView.isPresent()) {
+            onlineTime = onlineView.get();
+        } else {
+            LOGGER.info("Player data not found:OnlineTime");
+        }
+        Optional<Long> lastOnlineTimeView =  view.getOptionalLong("LastOnlineTime");
+        if (lastOnlineTimeView.isPresent()) {
+            lastOnlineTime = lastOnlineTimeView.get();
+        }
+        Optional<Integer> blockBreakView = view.getOptionalInt("BlockBreak");
+        if (blockBreakView.isPresent()) {
+            blockBreak = blockBreakView.get();
+        } else {
+            LOGGER.info("Player data not found:BlockBreak");
+        }
+        Optional<GlobalPos> posHistoryView = view.read("PosHistory", GlobalPos.CODEC);
+        if (posHistoryView.isPresent()) {
+            GlobalPos pos = posHistoryView.get();
+            ServerWorld world = getServer().getWorld(pos.dimension());
+            if (Objects.isNull(world)) {
+                LOGGER.error("World not found when load pos history: %s".formatted(pos.dimension().getValue().toString()));
+                return new PlayerData(onlineTime, lastOnlineTime, blockBreak);
+            }
+            return new PlayerData(onlineTime, lastOnlineTime, blockBreak, new PlayerPos(pos.pos(), world));
+        } else {
+            return new PlayerData(onlineTime, lastOnlineTime, blockBreak);
+        }
+    }
+
+    @Deprecated
     public static PlayerData ofNbt(NbtCompound nbt) {
         int onlineTime = 0;
         long lastOnlineTime = 0;
@@ -90,6 +136,17 @@ public class PlayerData extends AbstractHelper{
         return new PlayerData(onlineTime, lastOnlineTime, blockBreak);
     }
 
+    public void writeView(WriteView view) {
+        view.putInt("OnlineTime", this.onlineTime);
+        view.putLong("LastOnlineTime", this.lastOnlineTime);
+        view.putInt("BlockBreak", this.blockBreak);
+        if (!Objects.isNull(this.posHistory)) {
+            GlobalPos pos = GlobalPos.create(this.posHistory.world.getRegistryKey(), this.posHistory.pos);
+            view.put("PosHistory", GlobalPos.CODEC, pos);
+        }
+    }
+
+    @Deprecated
     public NbtCompound writeNbt(NbtCompound nbt) {
         nbt.putInt("OnlineTime", this.onlineTime);
         nbt.putLong("LastOnlineTime", this.lastOnlineTime);
