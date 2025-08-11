@@ -1,5 +1,6 @@
 package cn.focot.codelab.minecodecraft;
 
+import cn.focot.codelab.minecodecraft.handlers.ApiHandler;
 import cn.focot.codelab.minecodecraft.handlers.PlayerHandler;
 import cn.focot.codelab.minecodecraft.handlers.ServerHandler;
 import io.nats.client.Connection;
@@ -70,6 +71,7 @@ public class MineCodeCraftMod implements ModInitializer {
     public static void loadNatsConnection() {
         if (config.getConfigBean().nats.server != null && !Objects.equals(config.getConfigBean().nats.server, "") && !Objects.equals(lastNcServer, config.getConfigBean().nats.server)) {
             String natsServer = config.getConfigBean().nats.server;
+            String prefix = config.getConfigBean().nats.prefix;
             if (nc != null) {
                 try {
                     nc.close();
@@ -79,8 +81,9 @@ public class MineCodeCraftMod implements ModInitializer {
             }
             LOGGER.info("Connect to NATS: {}", natsServer);
             try {
-                nc = Nats.connect(natsServer);
                 lastNcServer = natsServer;
+                nc = Nats.connect(natsServer);
+                nc.createDispatcher(ApiHandler.HANDLER).subscribe(prefix + ".api");
             } catch (IOException | InterruptedException e) {
                 LOGGER.error("Failed to connect to nats server", e);
             }
