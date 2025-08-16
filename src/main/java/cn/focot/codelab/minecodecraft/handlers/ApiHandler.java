@@ -10,6 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public class ApiHandler extends AbstractHandler implements MessageHandler {
     public void onMessage(Message msg) {
         final String apiPrefix = MineCodeCraftMod.getConfig().getConfigBean().nats.prefix + ".api";
         final String subject = msg.getSubject();
-        final String[] apiSubject = subject.substring(subject.lastIndexOf(apiPrefix) + 1).split("\\.");
+        final String[] apiSubject = subject.substring(apiPrefix.length() + 1).split("\\.");
         if (apiSubject.length < 1) return;
         switch (apiSubject[0]) {
         case "player":
