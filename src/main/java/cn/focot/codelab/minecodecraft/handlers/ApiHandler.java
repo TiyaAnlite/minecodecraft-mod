@@ -17,7 +17,7 @@ public class ApiHandler extends AbstractHandler implements MessageHandler {
     public static final ApiHandler HANDLER = new ApiHandler();
 
     @Override
-    public void onMessage(Message msg) throws InterruptedException {
+    public void onMessage(Message msg) {
         final String apiPrefix = MineCodeCraftMod.getConfig().getConfigBean().nats.prefix + ".api";
         final String subject = msg.getSubject();
         final String[] apiSubject = subject.substring(subject.lastIndexOf(apiPrefix) + 1).split("\\.");

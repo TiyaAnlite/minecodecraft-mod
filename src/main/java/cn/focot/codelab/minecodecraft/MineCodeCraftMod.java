@@ -83,7 +83,7 @@ public class MineCodeCraftMod implements ModInitializer {
             try {
                 lastNcServer = natsServer;
                 nc = Nats.connect(natsServer);
-                nc.createDispatcher(ApiHandler.HANDLER).subscribe(prefix + ".api");
+                nc.createDispatcher(ApiHandler.HANDLER).subscribe(prefix + ".api.>");
             } catch (IOException | InterruptedException e) {
                 LOGGER.error("Failed to connect to nats server", e);
             }
